@@ -1,12 +1,15 @@
 import * as Store from "./store.js";
 (async () => {
-let REMOTE = null;
-try { REMOTE = await Store.loadSite(); } catch (e) { console.warn("load site", e); }
-const FIRST = !REMOTE;
-const RAW = REMOTE ? JSON.stringify(REMOTE) : await (await fetch("/seed.json", { cache: "no-cache" })).text();
+/* เปิดเร็ว: ใช้สำเนาในเครื่องก่อน (ถ้ามี) แล้วค่อยอัปเดตจาก Firebase แบบเรียลไทม์ */
+let CACHED = null, REMOTE = null;
+try { CACHED = await Store.cachedSite(); } catch {}
+if (!CACHED) { try { REMOTE = await Store.loadSite(); } catch (e) { console.warn("load site", e); } }
+const FIRST = !CACHED && !REMOTE;
+const RAW = CACHED || (REMOTE ? JSON.stringify(REMOTE) : await (await fetch("/seed.json", { cache: "no-cache" })).text());
 let S = JSON.parse(RAW); S.img = S.img || {};
 let SAVED = RAW;
 const IMG = {};
+if (!FIRST) { try { Object.assign(IMG, await Store.cachedImages(S.imgIds || [])); } catch {} }
 let ROUTE = (() => { try { return location.hash || "#home"; } catch { return "#home"; } })();
 function go(h) { ROUTE = h; try { history.replaceState(null, "", h); } catch {} render(); scrollTo(0, 0); }
 
@@ -139,7 +142,7 @@ function shell() {
     <div>${[sc.logo, sc.logo2].some(img) ? `<div class="f-ems">${[sc.logo, sc.logo2].filter(img).map(x => `<span><img src="${img(x)}" alt=""></span>`).join("")}</div>` : ""}<div class="big">${esc(sc.name)}</div><p>${esc(sc.address)}</p><p>${esc(sc.areaFull || sc.area)}</p>${sc.code ? `<p>รหัสโรงเรียน ${esc(sc.code)}</p>` : ""}${sc.phone ? `<p>โทรศัพท์ ${esc(sc.phone)}</p>` : ""}${sc.email ? `<p>อีเมล ${esc(sc.email)}</p>` : ""}${safeUrl(sc.map) ? `<p><a href="${esc(sc.map)}" target="_blank" rel="noopener">แผนที่โรงเรียน ↗</a></p>` : ""}</div>
     <div><h4>เมนูหลัก</h4><ul>${NAV.slice(1).map(([k, t]) => `<li><a href="#${k}">${t}</a></li>`).join("")}</ul></div>
     <div><h4>หน่วยงานทางการศึกษา</h4><ul>${(S.links || []).filter(l => safeUrl(l.u)).map(l => `<li><a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.t)} ↗</a></li>`).join("")}</ul></div>
-  </div><div class="copy"><div class="wrap"><span>© ${now.getFullYear() + 543} ${esc(sc.name)} สงวนลิขสิทธิ์</span><span>โรงเรียนวิถีพุทธ · ${esc(sc.area)} · <a href="#admin">สำหรับผู้ดูแล</a></span></div></div></footer>
+  </div><div class="copy"><div class="wrap"><span>© ${now.getFullYear() + 543} ${esc(sc.name)} สงวนลิขสิทธิ์</span><span>โรงเรียนวิถีพุทธ · ${esc(sc.area)}</span></div></div></footer>
   <button class="totop" id="toTop" aria-label="กลับขึ้นด้านบน"><span class="tt-in">${SVG.up}</span></button>
   <div id="savebar"></div>`;
   $("#menuBtn").onclick = () => { const n = $("#mainNav"); n.classList.toggle("open"); $("#menuBtn").setAttribute("aria-expanded", n.classList.contains("open")); };
@@ -1070,12 +1073,27 @@ document.addEventListener("click", e => {
 
 let curUser = null;
 shell(); render();
-/* load images stored in Firestore (one document per image) */
-if (!FIRST) {
-  const ids = S.imgIds || []; let t = null;
-  const repaint = () => { clearTimeout(t); t = setTimeout(() => { if (ROUTE !== "#admin") { shell(); render(); } }, 250); };
-  Store.loadImages(ids, (id, d) => { IMG[id] = d; repaint(); }).then(repaint);
+/* รูปภาพ: ใช้สำเนาในเครื่องก่อน รูปที่ยังไม่มีค่อยโหลดจาก Firestore (1 เอกสารต่อ 1 รูป) */
+let repT = null;
+const repaint = () => { clearTimeout(repT); repT = setTimeout(() => { if (ROUTE !== "#admin") { shell(); render(); } }, 120); };
+async function loadImgs() {
+  const ids = (S.imgIds || []).filter(id => !IMG[id]); if (!ids.length) return;
+  try { const have = await Store.cachedImages(ids); if (Object.keys(have).length) { Object.assign(IMG, have); repaint(); } } catch {}
+  const miss = ids.filter(id => !IMG[id]);
+  if (miss.length) await Store.loadImages(miss, (id, d) => { IMG[id] = d; repaint(); });
 }
+if (!FIRST) loadImgs().then(() => Store.pruneImages(S.imgIds || []));
+/* เรียลไทม์: เมื่อมีการเผยแพร่ใหม่ ทุกเครื่องที่เปิดอยู่จะเห็นข้อมูลล่าสุดทันทีโดยไม่ต้องรีเฟรช */
+if (!FIRST) Store.watchSite(json => {
+  if (!json || json === SAVED) return;
+  if (dirty) { toast("มีการเผยแพร่ฉบับใหม่จากอีกเครื่อง กดเผยแพร่ของเครื่องนี้จะทับฉบับนั้น"); return; }
+  SAVED = json; BASE = hash(SAVED);
+  const keepYear = viewYear;
+  S = JSON.parse(json); S.img = {};
+  viewYear = (S.years || []).includes(keepYear) && keepYear !== S.year ? keepYear : S.year;
+  if (ROUTE !== "#admin") { shell(); render(); }
+  loadImgs().then(() => Store.pruneImages(S.imgIds || []));
+});
 document.addEventListener("click", async e => {
   if (e.target.closest("#loginBtn")) { try { await Store.signIn(); } catch (er) { toast("เข้าสู่ระบบไม่สำเร็จ"); console.error(er); } }
   if (e.target.closest("#logoutBtn")) { await Store.signOut(); }
