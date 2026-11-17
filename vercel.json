@@ -1,0 +1,5 @@
+{
+  "headers": [
+    { "source": "/(app.js|store.js|firebase-config.js|style.css|seed.json)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }] }
+  ]
+}
