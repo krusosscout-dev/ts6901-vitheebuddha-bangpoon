@@ -11,7 +11,7 @@ let SAVED = RAW;
 const IMG = {};
 if (!FIRST) { try { Object.assign(IMG, await Store.cachedImages(S.imgIds || [])); } catch {} }
 let ROUTE = (() => { try { return location.hash || "#home"; } catch { return "#home"; } })();
-function go(h) { ROUTE = h; try { history.replaceState(null, "", h); } catch {} render(); scrollTo(0, 0); }
+function go(h) { if ($(".dv")) closeDoc(); if ($(".vp")) closeVid(); ROUTE = h; try { history.replaceState(null, "", h); } catch {} render(); scrollTo(0, 0); }
 
 /* ---------- constants ---------- */
 const IND = [
@@ -68,7 +68,7 @@ function money(p) {
 }
 
 /* ---------- layout ---------- */
-const NAV = [["home","หน้าแรก","หน้าแรก"],["about","เกี่ยวกับโรงเรียน","เกี่ยวกับเรา"],["people","ผู้บริหารและบุคลากร","บุคลากร"],["way","วิถีพุทธ 29 ประการ","วิถีพุทธ 29"],["bp","Best Practice","Best Practice"],["projects","โครงงานคุณธรรม","โครงงาน"],["dhamma","ธรรมะประจำสัปดาห์","ธรรมะ"],["news","ข่าวกิจกรรม","ข่าว"],["docs","เอกสารเผยแพร่","เอกสาร"],["contact","ติดต่อเรา","ติดต่อ"]];
+const NAV = [["home","หน้าแรก","หน้าแรก"],["about","เกี่ยวกับโรงเรียน","เกี่ยวกับเรา"],["people","ผู้บริหารและบุคลากร","บุคลากร"],["way","วิถีพุทธ 29 ประการ","วิถีพุทธ 29"],["bp","Best Practice","Best Practice"],["projects","โครงงานคุณธรรม","โครงงาน"],["dhamma","ธรรมะประจำสัปดาห์","ธรรมะ"],["plans","แผนการจัดการเรียนรู้","แผนการสอน"],["innov","นวัตกรรม","นวัตกรรม"],["news","ข่าวกิจกรรม","ข่าว"],["videos","วิดีโอกิจกรรม","วิดีโอ"],["docs","เอกสารเผยแพร่","เอกสาร"],["contact","ติดต่อเรา","ติดต่อ"]];
 const SVG = {
   search: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
   menu: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
@@ -80,8 +80,8 @@ const SVG = {
 const MENU = [
   ["home", "หน้าแรก"],
   ["ข้อมูลโรงเรียน", [["about", "ประวัติและวิสัยทัศน์"], ["people", "ผู้บริหารและบุคลากร"], ["contact", "ติดต่อโรงเรียน"]]],
-  ["วิถีพุทธ", [["way", "อัตลักษณ์โรงเรียนวิถีพุทธ 29 ประการ"], ["bp", "Best Practice"], ["projects", "โครงงานคุณธรรม"], ["dhamma", "ธรรมะประจำสัปดาห์"]]],
-  ["ข่าวสาร", [["news", "ข่าวทั้งหมด", ""], ...CATS.map(c => ["news", c, c])]],
+  ["วิถีพุทธ", [["way", "อัตลักษณ์โรงเรียนวิถีพุทธ 29 ประการ"], ["bp", "Best Practice"], ["projects", "โครงงานคุณธรรม"], ["dhamma", "ธรรมะประจำสัปดาห์"], ["plans", "แผนการจัดการเรียนรู้"], ["innov", "นวัตกรรม"]]],
+  ["ข่าวสาร", [["news", "ข่าวทั้งหมด", ""], ...CATS.map(c => ["news", c, c]), ["videos", "วิดีโอกิจกรรม"]]],
   ["docs", "เอกสารเผยแพร่"],
   ["contact", "ติดต่อเรา"],
 ];
@@ -224,6 +224,7 @@ V.home = () => {
   ${(() => { const e = (S.events || []).filter(x => x.time && new Date(x.date + "T" + x.time + ":00+07:00").getTime() > Date.now()).sort((a, b) => a.date.localeCompare(b.date))[0];
     return e ? `<section class="wrap"><div class="cdband reveal"><div class="cd-t"><span class="cd-k">นับถอยหลัง</span><b>${esc(e.title)}</b><span>${thDate(e.date, true)} เวลา ${esc(e.time.replace(":", "."))} น.</span></div><div class="cdbox" id="cd" data-t="${esc(e.date)}T${esc(e.time)}"><div><b>–</b><span>วัน</span></div><div><b>–</b><span>ชั่วโมง</span></div><div><b>–</b><span>นาที</span></div><div><b>–</b><span>วินาที</span></div></div></div></section>` : ""; })()}
   <section class="wrap"><nav class="quick reveal" aria-label="บริการด่วน">${QUICK.map(([h, t, ic]) => `<a href="#${h}"><span class="qi">${ic}</span><b>${t}</b></a>`).join("")}</nav></section>
+  ${homeVideos(no)}
   ${info.length ? `<section class="sec" style="padding-top:30px"><div class="wrap"><div class="st"><h2><span class="no">${no()}</span>ข้อมูลพื้นฐาน</h2><a href="#about">ข้อมูลโรงเรียน ›</a></div>
     <div class="info reveal">${info.map(([v, l, u]) => `<div><span>${l}</span><b data-count="${+v || 0}">${num(v)}</b><small>${u}</small></div>`).join("")}</div></div></section>` : ""}
 
@@ -252,8 +253,9 @@ V.home = () => {
     <div class="bp-foot reveal"><div class="bp-media">${rotBox(S.bp?.photos, canEdit ? "เพิ่มภาพได้ที่ จัดการเว็บไซต์ › Best Practice" : "ภาพกิจกรรม Best Practice")}</div>${(S.bp?.results || []).length ? `<div class="rs-grid">${S.bp.results.map(r => `<div class="rs"><b>${esc(r.value)}</b><span>${esc(r.label)}</span></div>`).join("")}</div>` : ""}</div>
   </div></section>
 
+  ${(() => { const ks = [...byYear(S.plans).map(x => [x, "plans"]), ...byYear(S.innovs).map(x => [x, "innov"])].sort((a, b) => String(b[0].date || "").localeCompare(String(a[0].date || ""))).slice(0, 4); return ks.length ? `<section class="sec"><div class="wrap"><div class="st"><h2><span class="no">${no()}</span>แผนการจัดการเรียนรู้และนวัตกรรม</h2><span class="st-links"><a href="#plans">แผนการสอน ›</a><a href="#innov">นวัตกรรม ›</a></span></div><div class="kcs">${ks.map(([x, k]) => kitCard(x, k)).join("")}</div></div></section>` : ""; })()}
   <section class="sec paper"><div class="wrap two">
-    <div><div class="st"><h2><span class="no">${no()}</span>โครงงานคุณธรรม</h2><a href="#projects">ทั้งหมด ›</a></div>${pj.length ? pj.slice(0, 2).map(p => { const m = money(p); return `<article class="hc reveal">${rotBox(p.photos, canEdit ? "เพิ่มภาพได้ที่ จัดการเว็บไซต์ › โครงงานคุณธรรม" : "ภาพโครงงานจะแสดงที่นี่")}<div class="hc-bd"><span class="chip">${esc(p.dhamma)}</span><h3><a href="#projects">${esc(p.name)}</a></h3><p class="meta">${esc(p.target || "")}${p.students ? " · " + num(p.students) + " คน" : ""}</p>${p.summary ? `<p class="hc-sum">${esc(short(p.summary, 170))}</p>` : ""}${m.inc ? moneyCards(m) : ""}<div class="hc-ft"><a class="more" href="#projects">อ่านรายละเอียด ›</a>${docBtn(p.doc)}</div></div></article>`; }).join("") : emptyBox("ยังไม่มีโครงงานในปีนี้")}</div>
+    <div><div class="st"><h2><span class="no">${no()}</span>โครงงานคุณธรรม</h2><a href="#projects">ทั้งหมด ›</a></div>${pj.length ? pj.slice(0, 2).map(p => { const m = money(p); return `<article class="hc reveal">${rotBox(p.photos, canEdit ? "เพิ่มภาพได้ที่ จัดการเว็บไซต์ › โครงงานคุณธรรม" : "ภาพโครงงานจะแสดงที่นี่")}<div class="hc-bd"><span class="chip">${esc(p.dhamma)}</span><h3><a href="#projects">${esc(p.name)}</a></h3><p class="meta">${esc(p.target || "")}${p.students ? " · " + num(p.students) + " คน" : ""}</p>${p.summary ? `<p class="hc-sum">${esc(short(p.summary, 170))}</p>` : ""}${m.inc ? moneyCards(m) : ""}<div class="hc-ft"><a class="more" href="#projects">อ่านรายละเอียด ›</a>${docBtn(p.doc, "เล่มรายงาน · " + p.name)}${safeUrl(p.slides) ? `<a class="docb" href="${esc(p.slides)}" data-file="${esc(p.slides)}" data-ft="สไลด์นำเสนอ · ${esc(p.name)}">${SVG.arrow} สไลด์นำเสนอ</a>` : ""}</div></div></article>`; }).join("") : emptyBox("ยังไม่มีโครงงานในปีนี้")}</div>
     <div><div class="st"><h2><span class="no">${no()}</span>ธรรมะประจำสัปดาห์</h2><a href="#dhamma">ทั้งหมด ›</a></div>${(() => { const all = sortDate(byYear(S.dhamma)); return `<div class="dh-list">${(S.dhammaInfo || []).map(x => { const t = dhType(x.name), rec = all.filter(d => d.type === t), last = rec[0];
       return `<article class="hc hc-row reveal">${rotBox(rec.flatMap(d => d.photos || []), canEdit ? "เพิ่มภาพได้ที่ จัดการเว็บไซต์ › ธรรมะประจำสัปดาห์" : "ภาพกิจกรรมจะแสดงที่นี่")}<div class="hc-bd"><h3><a href="#dhamma">${esc(x.name)}</a></h3>${last ? `<p class="hc-last"><span>ล่าสุด ${thDate(last.date)}</span> ${esc(last.topic)}</p>` : ""}<p class="hc-sum">${esc(short(x.text, 130))}</p><div class="hc-ft"><a class="more" href="#dhamma">ดูบันทึกทั้งหมด ›</a>${docBtn(last?.doc)}</div></div></article>`; }).join("")}</div>`; })()}</div>
   </div></section>
@@ -270,7 +272,7 @@ function rotBox(ids, empty) {
     : `<div class="ind-ph none rot">${LOTUS}<span>${empty || "ภาพกิจกรรมจะแสดงที่นี่"}</span></div>`;
 }
 const short = (t, n) => { t = String(t || "").replace(/\s+/g, " ").trim(); return t.length > n ? t.slice(0, n).replace(/\s\S*$/, "") + "…" : t; };
-const docBtn = u => safeUrl(u) ? `<a class="docb" href="${esc(u)}" target="_blank" rel="noopener">${SVG.arrow} เปิดเอกสาร</a>` : "";
+const docBtn = (u, t) => safeUrl(u) ? `<a class="docb" href="${esc(u)}" data-file="${esc(u)}" data-ft="${esc(t || "เอกสาร")}">${SVG.arrow} เปิดเอกสาร</a>` : "";
 const dhType = name => /5\s*นาที/.test(name) ? "5min" : "dekdee";
 function moneyCards(m, full) { return `<div class="mcards">${[[m.inc, "รายรับ"], [m.exp, "รายจ่าย"], [m.profit, "กำไรสุทธิ"], ...(full && m.seed ? [[m.seed, "เงินตั้งต้น"], [m.profit - m.seed, "คงเหลือหลังคืนทุน"]] : [])].map(([v, l]) => `<div><b>${num(v)}</b><span>${l} (บาท)</span></div>`).join("")}</div>`; }
 const driveId = u => (String(u || "").match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]{20,})/) || [])[1] || "";
@@ -290,7 +292,7 @@ function docCard(d) {
   return `<button type="button" class="dc" data-doc="${esc(d.id)}"${can ? "" : " disabled"}><span class="dc-cv"><span class="dc-ph">${DOCI}</span>${cov ? `<img src="${cov}" alt="">` : d.file ? `<img data-pdfcov="${esc(d.file.id)}" alt="" hidden>` : did ? `<img data-ext src="https://drive.google.com/thumbnail?id=${esc(did)}&sz=w600" alt="">` : ""}${d.cat ? `<span class="dc-cat">${esc(d.cat)}</span>` : ""}<span class="dc-eye">อ่านเอกสาร</span></span><span class="dc-bd"><b>${esc(d.title)}</b><small>${d.date ? thDate(d.date) : ""}${d.file?.pages ? ` · ${d.file.pages} หน้า` : ""}${d.file ? " · PDF" : did ? " · Google Drive" : ""}</small>${d.desc ? `<span class="dc-ds">${esc(d.desc)}</span>` : ""}</span></button>`;
 }
 async function paintCovers() {
-  document.querySelectorAll(".dc-cv img[data-ext]").forEach(im => { im.onerror = () => im.remove(); });
+  document.querySelectorAll(".dc-cv img[data-ext], .vc-cv img[data-ext], .hv img[data-ext], .rt-cv img[data-ext]").forEach(im => { im.onerror = () => im.remove(); });
   const ims = [...document.querySelectorAll("img[data-pdfcov]")]; if (!ims.length) return;
   let L; try { L = await loadPdf(); } catch { return; }
   for (const im of ims) { const id = im.dataset.pdfcov;
@@ -298,15 +300,16 @@ async function paintCovers() {
       document.querySelectorAll(`img[data-pdfcov="${id}"]`).forEach(x => { x.src = coverCache[id]; x.hidden = false; }); } catch {} }
 }
 let dvKey = null;
-function closeDoc() { $(".dv")?.remove(); document.body.style.overflow = ""; if (dvKey) removeEventListener("keydown", dvKey); dvKey = null; }
+function closeDoc() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); $(".dv")?.remove(); document.body.style.overflow = ""; if (dvKey) removeEventListener("keydown", dvKey); dvKey = null; }
 async function openDoc(id) {
   const d = (S.docs || []).find(x => x.id === id); if (!d) return;
   closeDoc();
   const did = driveId(d.url), box = document.createElement("div"); box.className = "dv"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", d.title);
-  box.innerHTML = `<div class="dv-bar"><span class="dv-t"><b>${esc(d.title)}</b><small id="dvInfo">${esc(d.cat || "")}</small></span><span class="dv-act">${d.file ? `<button type="button" class="btn sm" id="dvDl" hidden>ดาวน์โหลด</button>` : ""}${safeUrl(d.url) ? `<a class="btn sm" href="${esc(d.url)}" target="_blank" rel="noopener">เปิดในแท็บใหม่ ↗</a>` : ""}<button type="button" class="dv-x" aria-label="ปิด">×</button></span></div><div class="dv-body"></div>`;
+  box.innerHTML = `<div class="dv-bar"><span class="dv-t"><b>${esc(d.title)}</b><small id="dvInfo">${esc(d.cat || "")}</small></span><span class="dv-act"><button type="button" class="btn sm" data-full></button>${d.file ? `<button type="button" class="btn sm" id="dvDl" hidden>ดาวน์โหลด</button>` : ""}${safeUrl(d.url) ? `<a class="btn sm" href="${esc(d.url)}" target="_blank" rel="noopener">เปิดในแท็บใหม่ ↗</a>` : ""}<button type="button" class="dv-x" aria-label="ปิด">×</button></span></div><div class="dv-body"></div>`;
   document.body.append(box); document.body.style.overflow = "hidden";
   box.querySelector(".dv-x").onclick = closeDoc; box.addEventListener("click", e => { if (e.target === box) closeDoc(); });
-  dvKey = e => { if (e.key === "Escape") closeDoc(); }; addEventListener("keydown", dvKey);
+  dvKey = e => { if (e.key === "Escape" && !document.fullscreenElement) closeDoc(); }; addEventListener("keydown", dvKey);
+  fsButton(box);
   const body = box.querySelector(".dv-body");
   if (d.file) (async () => { let dl = null; try { dl = await window.claude?.use?.("downloads"); } catch {} const bt = $("#dvDl"); if (!dl || !bt) return; bt.hidden = false;
     bt.onclick = async () => { try { const blob = await (await fetch("/_blob/" + d.file.id)).blob(); const fn = (d.file.name && /\.pdf$/i.test(d.file.name) ? d.file.name : (d.title || "เอกสาร") + ".pdf").replace(/[\\/:*?"<>|]/g, " "); await dl.save({ filename: fn, data: blob }); } catch (er) { if (er?.code && er.code !== "declined") toast("ดาวน์โหลดไม่สำเร็จ"); } }; })();
@@ -324,6 +327,158 @@ async function openDoc(id) {
   else if (safeUrl(d.url)) body.innerHTML = `<iframe src="${esc(d.url)}" title="${esc(d.title)}"></iframe>`;
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-doc]"); if (b && !b.disabled) { e.preventDefault(); openDoc(b.dataset.doc); } });
+/* ---------- ไฟล์และสไลด์: แนบลิงก์ แล้วเปิดดูในเว็บไซต์ได้ทันที (ขยายเต็มจอได้) ---------- */
+function fileInfo(u) {
+  u = String(u || "").trim(); if (!safeUrl(u)) return null; let m;
+  const th = id => `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+  if ((m = u.match(/docs\.google\.com\/presentation\/d\/([\w-]{20,})/))) return { kind: "Google Slides", embed: `https://docs.google.com/presentation/d/${m[1]}/embed?start=false&loop=false&delayms=60000`, thumb: th(m[1]) };
+  if ((m = u.match(/docs\.google\.com\/document\/d\/([\w-]{20,})/))) return { kind: "Google Docs", embed: `https://docs.google.com/document/d/${m[1]}/preview`, thumb: th(m[1]) };
+  if ((m = u.match(/docs\.google\.com\/spreadsheets\/d\/([\w-]{20,})/))) return { kind: "Google Sheets", embed: `https://docs.google.com/spreadsheets/d/${m[1]}/preview`, thumb: th(m[1]) };
+  if ((m = driveId(u))) return { kind: "Google Drive", embed: `https://drive.google.com/file/d/${m}/preview`, thumb: th(m) };
+  if ((m = u.match(/canva\.com\/design\/([\w-]+)(?:\/([\w-]+))?/))) { const tk = m[2] && !/^(view|edit|watch)$/.test(m[2]) ? "/" + m[2] : ""; return { kind: "Canva", embed: `https://www.canva.com/design/${m[1]}${tk}/view?embed` }; }
+  if (/\.(pptx?|docx?|xlsx?)(\?|#|$)/i.test(u)) return { kind: "Office", embed: `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(u)}` };
+  if (/\.pdf(\?|#|$)/i.test(u)) return { kind: "PDF", embed: u };
+  if (/^https:\/\/[^/]+\.(vercel\.app|netlify\.app|github\.io|pages\.dev|web\.app|firebaseapp\.com)(\/|$)/i.test(u)) return { kind: "สไลด์บนเว็บ", embed: u, live: true };
+  return { kind: "ลิงก์", embed: u };
+}
+function fsButton(box) {
+  const b = box.querySelector("[data-full]"); if (!b) return;
+  const sync = () => { const on = document.fullscreenElement === box || box.classList.contains("dv-max"); b.textContent = on ? "ย่อหน้าจอ" : "⛶ ขยายเต็มจอ"; };
+  b.onclick = async () => {
+    if (document.fullscreenElement === box) { await document.exitFullscreen().catch(() => {}); box.classList.remove("dv-max"); }
+    else if (box.classList.contains("dv-max")) box.classList.remove("dv-max");
+    else { box.classList.add("dv-max"); try { await box.requestFullscreen?.(); } catch {} }
+    sync();
+  };
+  box.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) box.classList.remove("dv-max"); sync(); });
+  sync();
+}
+function openFile(url, title, sub) {
+  const fi = fileInfo(url); if (!fi) return;
+  closeDoc(); closeVid();
+  const box = document.createElement("div"); box.className = "dv"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); box.setAttribute("aria-label", title || "เอกสาร");
+  box.innerHTML = `<div class="dv-bar"><span class="dv-t"><b>${esc(title || "เอกสาร")}</b><small>${esc(sub || fi.kind)}</small></span><span class="dv-act"><button type="button" class="btn sm" data-full></button><a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">เปิดในแท็บใหม่ ↗</a><button type="button" class="dv-x" aria-label="ปิด">×</button></span></div><div class="dv-body"><iframe src="${esc(fi.embed)}" title="${esc(title || "เอกสาร")}" allow="autoplay; fullscreen" allowfullscreen></iframe></div>`;
+  document.body.append(box); document.body.style.overflow = "hidden";
+  box.querySelector(".dv-x").onclick = closeDoc; box.addEventListener("click", e => { if (e.target === box) closeDoc(); });
+  dvKey = e => { if (e.key === "Escape" && !document.fullscreenElement) closeDoc(); }; addEventListener("keydown", dvKey);
+  const fr = box.querySelector("iframe"); fr.addEventListener("load", () => { try { fr.focus(); fr.contentWindow.focus(); } catch {} });
+  fsButton(box); thaify(box);
+}
+document.addEventListener("click", e => { const a = e.target.closest("[data-file]"); if (a && !a.disabled) { e.preventDefault(); openFile(a.dataset.file, a.dataset.ft || "", a.dataset.fsub || ""); } });
+const RI = {
+  file: QI('<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M8.5 13h7M8.5 16.5h7"/>'),
+  slides: QI('<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 16v4M8 20h8M7 8h6M7 11h10"/>'),
+  video: QI('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/>'),
+};
+function resTile(u, label, ic, title) {
+  if (ic === "video") { const vi = vidInfo(u); if (!vi) return ""; return `<button type="button" class="rt" data-vurl="${esc(u)}" data-vt="${esc(title + " · " + label)}"><span class="rt-cv"><span class="dc-ph">${RI.video}</span>${vi.thumb ? `<img data-ext src="${esc(vi.thumb)}" alt="" loading="lazy">` : ""}<span class="dc-eye">เล่นวิดีโอ</span></span><span class="rt-bd"><b>${esc(label)}</b><small>${esc(vi.kind)}</small></span></button>`; }
+  const fi = fileInfo(u); if (!fi) return "";
+  return `<button type="button" class="rt" data-file="${esc(u)}" data-ft="${esc(title + " · " + label)}" data-fsub="${esc(fi.kind)}"><span class="rt-cv"><span class="dc-ph">${RI[ic]}</span>${fi.thumb ? `<img data-ext src="${esc(fi.thumb)}" alt="" loading="lazy">` : fi.live ? `<iframe class="rt-live" src="${esc(u)}" loading="lazy" tabindex="-1" aria-hidden="true" title=""></iframe>` : ""}<span class="dc-eye">เปิดดู</span></span><span class="rt-bd"><b>${esc(label)}</b><small>${esc(fi.kind)}</small></span></button>`;
+}
+/* สไลด์ฝังในหน้า: เลื่อนดู/กดเปลี่ยนสไลด์ได้เลยโดยไม่ต้องกดเปิด และขยายเต็มจอได้ */
+function slideBox(u, title) {
+  const fi = fileInfo(u); if (!fi) return "";
+  return `<div class="sb"><div class="sb-bar"><span class="sb-t"><b>สไลด์นำเสนอ</b><small>${esc(fi.kind)} · เลื่อนดูได้ในกรอบนี้</small></span><span class="dv-act"><button type="button" class="btn sm" data-sbfull="${esc(u)}" data-ft="${esc(title + " · สไลด์นำเสนอ")}">⛶ ขยายเต็มจอ</button><a class="btn sm" href="${esc(u)}" target="_blank" rel="noopener">เปิดในแท็บใหม่ ↗</a></span></div><div class="sb-frame"><iframe src="${esc(fi.embed)}" title="สไลด์นำเสนอ ${esc(title)}" loading="lazy" allow="autoplay; fullscreen" allowfullscreen></iframe></div></div>`;
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-sbfull]"); if (!b) return; e.preventDefault();
+  const box = b.closest(".sb");
+  if (document.fullscreenElement === box) { await document.exitFullscreen().catch(() => {}); return; }
+  if (box?.requestFullscreen) { try { await box.requestFullscreen(); const fr = box.querySelector("iframe"); try { fr.focus(); fr.contentWindow.focus(); } catch {} return; } catch {} }
+  openFile(b.dataset.sbfull, b.dataset.ft || "สไลด์นำเสนอ");
+});
+document.addEventListener("fullscreenchange", () => document.querySelectorAll("[data-sbfull]").forEach(b => { b.textContent = document.fullscreenElement === b.closest(".sb") ? "ย่อหน้าจอ" : "⛶ ขยายเต็มจอ"; }));
+const resRow = tiles => { const t = tiles.filter(Boolean); return t.length ? `<div class="rts">${t.join("")}</div>` : ""; };
+const nameKey = n => String(n || "").replace(/^(นาย|นางสาว|นาง|ว่าที่\s*ร\.?ต\.?\s*|ครู)\s*/, "").replace(/\s+/g, "");
+function teacherPic(x) {
+  if (img(x.tphoto)) return img(x.tphoto);
+  const k = nameKey(x.teacher); if (!k) return "";
+  const p = (S.people || []).find(p => nameKey(p.name) === k); return p ? img((p.photos || [])[0]) : "";
+}
+const KIT = {
+  plans: { coll: "plans", name: "แผนการจัดการเรียนรู้", file: "แผนการจัดการเรียนรู้", who: "ครูผู้สอน", empty: "ยังไม่มีแผนการจัดการเรียนรู้" },
+  innov: { coll: "innovs", name: "นวัตกรรม", file: "เล่มนวัตกรรม", who: "เจ้าของนวัตกรรม", empty: "ยังไม่มีนวัตกรรม" },
+};
+function kitHTML(x, k) {
+  const K = KIT[k], tp = teacherPic(x), ph = (x.photos || []).filter(img);
+  return `<article class="panel kit" id="k-${esc(x.id)}"><div class="kit-hd">
+    ${x.teacher || tp ? `<figure class="kit-tc"><span class="kit-ph">${tp ? `<img src="${tp}" alt="${esc(x.teacher || "")}">` : LOTUS}</span><figcaption><b>${esc(x.teacher || "")}</b><small>${K.who}</small></figcaption></figure>` : ""}
+    <div class="kit-tx">${x.subject ? `<span class="chip">${esc(x.subject)}</span>` : ""}<h2>${esc(x.title)}</h2><p class="meta">${[x.grade, x.dhamma ? "บูรณาการหลัก" + x.dhamma : "", x.date ? thDate(x.date, true) : ""].filter(Boolean).map(esc).join(" · ")}</p>${x.desc ? `<div class="prose">${paras(x.desc)}</div>` : ""}</div></div>
+    ${slideBox(x.slides, x.title)}
+    ${resRow([resTile(x.file, K.file, "file", x.title), resTile(x.video, "วิดีโอ", "video", x.title)])}
+    ${ph.length ? `<h3 class="kit-h">ภาพกิจกรรม</h3><div class="gallery">${ph.map(i => `<img src="${img(i)}" alt="" loading="lazy" data-zoom>`).join("")}</div>` : ""}
+  </article>`;
+}
+function kitCard(x, k) {
+  const tp = teacherPic(x), cov = img((x.photos || [])[0]);
+  return `<a class="kc reveal" href="#${k}" data-kit="${esc(x.id)}"><span class="kc-cv">${cov ? `<img src="${cov}" alt="" loading="lazy">` : `<span class="dc-ph">${RI[k === "plans" ? "file" : "slides"]}</span>`}<span class="kc-type">${KIT[k].name}</span></span><span class="kc-bd">${tp ? `<img class="kc-tp" src="${tp}" alt="">` : ""}<span><b>${esc(x.title)}</b><small>${esc(x.teacher || x.subject || "")}</small></span></span></a>`;
+}
+document.addEventListener("click", e => { const a = e.target.closest("[data-kit]"); if (!a) return; const id = a.dataset.kit; setTimeout(() => { const el = document.getElementById("k-" + id); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 350); });
+const kitPage = k => () => {
+  const K = KIT[k], xs = sortDate(byYear(S[K.coll]));
+  return pageHead(K.name, k === "plans" ? "แผนการสอนที่บูรณาการหลักธรรม พร้อมสไลด์และภาพกิจกรรม" : "นวัตกรรมของครู พร้อมเล่ม สไลด์ และภาพกิจกรรม") + `<section class="band"><div class="wrap">
+    <div class="filters">${yearPicker(k === "plans" ? "plYear" : "inYear")}</div>
+    ${xs.length ? xs.map(x => kitHTML(x, k)).join("") : `<div class="empty">${K.empty}ในปีการศึกษา ${esc(viewYear)}${canEdit ? ` · เพิ่มได้ที่ <a href="#admin">จัดการเว็บไซต์ › ${K.name}</a>` : ""}</div>`}
+  </div></section>`;
+};
+/* ---------- วิดีโอ: แนบลิงก์ แล้วเปิดดูในเว็บไซต์ได้ทันที ---------- */
+function vidInfo(u) {
+  u = String(u || "").trim(); if (!safeUrl(u)) return null; let m;
+  if ((m = u.match(/(?:youtube\.com\/(?:watch\?(?:[^#]*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([\w-]{11})/)))
+    return { kind: "YouTube", embed: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&rel=0&playsinline=1`, thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`, tall: /shorts\//.test(u) };
+  if ((m = driveId(u))) return { kind: "Google Drive", embed: `https://drive.google.com/file/d/${m}/preview`, thumb: `https://drive.google.com/thumbnail?id=${m}&sz=w800` };
+  if (/(?:facebook\.com|fb\.watch)\//.test(u) && /(?:\/videos?\/|\/watch|\/reel|fb\.watch|\/share\/[vr]\/)/.test(u))
+    return { kind: "Facebook", embed: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(u)}&show_text=false&autoplay=true&width=1280`, tall: /\/reel/.test(u) };
+  if ((m = u.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/))) return { kind: "TikTok", embed: `https://www.tiktok.com/embed/v2/${m[1]}`, tall: true };
+  if ((m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/))) return { kind: "Vimeo", embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1` };
+  if (/\.(mp4|webm|ogv|ogg|mov)(\?|#|$)/i.test(u)) return { kind: "วิดีโอ", file: u };
+  return null;
+}
+const PLAY = '<svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="rgba(158,18,25,.9)" stroke="#fff" stroke-width="3"/><path d="M26 20v24l19-12z" fill="#fff"/></svg>';
+const VIDI = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg>';
+const playerHTML = (vi, title) => vi.file ? `<video src="${esc(vi.file)}" controls autoplay playsinline preload="metadata"></video>` : `<iframe src="${esc(vi.embed)}" title="${esc(title || "วิดีโอ")}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+function vidCard(v) {
+  const vi = vidInfo(v.url), cov = img((v.photos || [])[0]);
+  return `<button type="button" class="vc" data-vid="${esc(v.id)}"${vi ? "" : " disabled"}><span class="vc-cv"><span class="vc-ph">${VIDI}</span>${cov ? `<img src="${cov}" alt="">` : vi?.thumb ? `<img data-ext src="${esc(vi.thumb)}" alt="" loading="lazy">` : ""}<span class="vc-play">${PLAY}</span>${vi ? `<span class="vc-src">${esc(vi.kind)}</span>` : ""}</span><span class="vc-bd"><b>${esc(v.title)}</b><small>${v.date ? thDate(v.date) : ""}</small>${v.desc ? `<span class="vc-ds">${esc(v.desc)}</span>` : ""}</span></button>`;
+}
+let vpKey = null;
+function closeVid() { $(".vp")?.remove(); document.body.style.overflow = ""; if (vpKey) removeEventListener("keydown", vpKey); vpKey = null; }
+function openVid(url, title, sub) {
+  const vi = vidInfo(url); if (!vi) return false;
+  closeVid(); closeDoc();
+  const box = document.createElement("div"); box.className = "vp" + (vi.tall ? " tall" : ""); box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); box.setAttribute("aria-label", title || "วิดีโอ");
+  box.innerHTML = `<div class="vp-in"><div class="dv-bar"><span class="dv-t"><b>${esc(title || "วิดีโอ")}</b><small>${esc(sub || vi.kind)}</small></span><span class="dv-act"><a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">เปิดใน ${esc(vi.kind)} ↗</a><button type="button" class="dv-x" aria-label="ปิด">×</button></span></div><div class="vp-frame">${playerHTML(vi, title)}</div></div>`;
+  document.body.append(box); document.body.style.overflow = "hidden";
+  box.querySelector(".dv-x").onclick = closeVid; box.addEventListener("click", e => { if (e.target === box || e.target.classList.contains("vp-in")) closeVid(); });
+  vpKey = e => { if (e.key === "Escape") closeVid(); }; addEventListener("keydown", vpKey);
+  thaify(box); return true;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-vid]"); if (b && !b.disabled) { e.preventDefault(); const v = [...(S.videos || []), ...(S.posts || []).map(p => ({ ...p, url: p.video }))].find(x => x.id === b.dataset.vid); if (v) openVid(v.url, v.title, v.date ? thDate(v.date) : ""); return; }
+  const a = e.target.closest("[data-vurl]"); if (a) { e.preventDefault(); openVid(a.dataset.vurl, a.dataset.vt || "", ""); }
+});
+/* หน้าแรก: วิดีโอใหญ่เล่นได้ในหน้าแรกเลย + รายการคลิปอื่นด้านข้าง */
+const vidThumb = v => { const vi = vidInfo(v.url), cov = img((v.photos || [])[0]); return cov ? `<img src="${cov}" alt="">` : vi?.thumb ? `<img data-ext src="${esc(vi.thumb)}" alt="" loading="lazy">` : ""; };
+const hvPoster = v => { const vi = vidInfo(v.url); return `<button type="button" class="hv-poster" data-hvplay="${esc(v.id)}" aria-label="เล่นวิดีโอ ${esc(v.title)}"><span class="vc-ph">${VIDI}</span>${vidThumb(v)}<span class="vc-play">${PLAY}</span>${vi ? `<span class="vc-src">${esc(vi.kind)}</span>` : ""}<span class="hv-cap"><b>${esc(v.title)}</b><small>${v.date ? thDate(v.date, true) : ""}${v.desc ? " · " + esc(v.desc) : ""}</small></span></button>`; };
+function homeVideos(no) {
+  const vs = sortDate(byYear(S.videos)).filter(v => vidInfo(v.url));
+  if (!vs.length) return canEdit ? `<section class="sec"><div class="wrap"><div class="st"><h2><span class="no">${no()}</span>วิดีโอกิจกรรม</h2></div>${emptyBox(`ยังไม่มีวิดีโอ · <a href="#admin">เพิ่มได้ที่ จัดการเว็บไซต์ › วิดีโอ</a> (ส่วนนี้ผู้ชมจะเห็นเมื่อมีวิดีโอแล้ว)`)}</div></section>` : "";
+  const rest = vs.slice(1, 5);
+  return `<section class="sec"><div class="wrap"><div class="st"><h2><span class="no">${no()}</span>วิดีโอกิจกรรม</h2><a href="#videos">ทั้งหมด ›</a></div>
+    <div class="hv${rest.length ? "" : " one"} reveal"><div class="hv-main" id="hvMain">${hvPoster(vs[0])}</div>${rest.length ? `<div class="hv-list">${vs.slice(0, 5).map((v, i) => `<button type="button" class="hv-it${i ? "" : " on"}" data-hv="${esc(v.id)}"><span class="hv-th"><span class="vc-ph">${VIDI}</span>${vidThumb(v)}<i>▶</i></span><span class="hv-tx"><b>${esc(v.title)}</b><small>${v.date ? thDate(v.date) : ""} · ${esc(vidInfo(v.url).kind)}</small></span></button>`).join("")}</div>` : ""}</div></div></section>`;
+}
+function playHome(id) {
+  const v = (S.videos || []).find(x => x.id === id), vi = v && vidInfo(v.url), box = $("#hvMain"); if (!vi || !box) return;
+  if (vi.tall) { openVid(v.url, v.title, v.date ? thDate(v.date) : ""); return; }
+  box.innerHTML = `<div class="vp-frame">${playerHTML(vi, v.title)}</div><div class="hv-now"><span><b>${esc(v.title)}</b><small>${v.date ? thDate(v.date, true) : ""}</small></span><a href="${esc(v.url)}" target="_blank" rel="noopener">เปิดใน ${esc(vi.kind)} ↗</a></div>`;
+  thaify(box);
+  document.querySelectorAll(".hv-it").forEach(b => b.classList.toggle("on", b.dataset.hv === id));
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-hvplay]"); if (a) { e.preventDefault(); playHome(a.dataset.hvplay); return; }
+  const b = e.target.closest("[data-hv]"); if (b) { e.preventDefault(); playHome(b.dataset.hv); if (innerWidth < 900) $("#hvMain")?.scrollIntoView({ behavior: "smooth", block: "center" }); }
+});
+const vidSec = (list, more) => list.length ? `<div class="vcs reveal">${list.map(vidCard).join("")}</div>` : "";
 let popTried = false;
 const POPSET = { mourn: { title: "เสด็จสู่สวรรคาลัย", sub: "น้อมสำนึกในพระมหากรุณาธิคุณตราบนิจนิรันดร์", b1t: "ลงนามถวายความอาลัย", gray: true },
   gold: { title: "ทรงพระเจริญ", sub: "ด้วยเกล้าด้วยกระหม่อม ขอเดชะ", b1t: "ลงนามถวายพระพร", gray: false } };
@@ -365,6 +520,8 @@ function peopleSec(compact) {
 V.people = () => pageHead("ผู้บริหารและบุคลากร", `${S.school.name} ปีการศึกษา ${viewYear}`) + `<section class="band"><div class="wrap">${peopleSec() || emptyBox(`ยังไม่มีรายชื่อบุคลากร${canEdit ? ` · <a href="#admin">เพิ่มได้ที่ จัดการเว็บไซต์ › บุคลากร</a>` : ""}`)}</div></section>`;
 V.web = u => {
   const url = safeUrl(u) ? u : "", lbl = webLabel(u) || url.replace(/^https?:\/\//, "").split("/")[0] || "ลิงก์ภายนอก";
+  const vi = vidInfo(url);
+  if (vi) return pageHead(lbl, `วิดีโอจาก ${vi.kind} · ดูได้ทันทีในเว็บไซต์โรงเรียน`, "วิดีโอ") + `<section class="band"><div class="wrap"><div class="vp-page${vi.tall ? " tall" : ""}"><div class="vp-frame">${playerHTML(vi, lbl)}</div></div><p class="meta" style="margin-top:10px;text-align:center"><a href="${esc(url)}" target="_blank" rel="noopener">เปิดใน ${esc(vi.kind)} ↗</a></p></div></section>`;
   return pageHead(lbl, "เปิดดูภายในเว็บไซต์โรงเรียน", "ลิงก์ภายนอก") + `<section class="band"><div class="wrap">${url ? `<div class="webv"><div class="webv-bar"><span class="webv-dots"><i></i><i></i><i></i></span><span class="webv-url no-th">${esc(url)}</span><a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">เปิดในแท็บใหม่ ↗</a></div><iframe src="${esc(url)}" title="${esc(lbl)}" referrerpolicy="no-referrer"></iframe></div><p class="meta" style="margin-top:10px">บางเว็บไซต์ไม่อนุญาตให้แสดงซ้อนในเว็บอื่น ถ้าหน้าด้านบนว่าง ให้กด “เปิดในแท็บใหม่”</p>` : emptyBox("ลิงก์ไม่ถูกต้อง")}</div></section>`;
 };
 V.about = () => {
@@ -416,7 +573,8 @@ V.projects = () => {
   return pageHead("โครงงานคุณธรรม", "โครงงานที่นักเรียนคิด วางแผน และลงมือทำเอง โดยใช้หลักธรรมนำการแก้ปัญหา") + `<section class="band"><div class="wrap">
     <div class="filters">${yearPicker("pjYear")}</div>
     ${ps.length ? ps.map(p => { const m = money(p); const es = sortDate(p.entries || []);
-      return `<article class="panel pjx" style="margin-bottom:20px"><div class="pjx-top">${rotBox(p.photos, canEdit ? "เพิ่มภาพได้ที่ จัดการเว็บไซต์ › โครงงานคุณธรรม" : "ภาพโครงงาน")}<div><span class="chip">${esc(p.dhamma)}</span><h2>${esc(p.name)}</h2>${p.virtue ? `<p class="meta" style="margin:4px 0 0">คุณธรรม: ${esc(p.virtue)}</p>` : ""}${docBtn(p.doc)}</div></div>
+      return `<article class="panel pjx" style="margin-bottom:20px"><div class="pjx-top">${rotBox(p.photos, canEdit ? "เพิ่มภาพได้ที่ จัดการเว็บไซต์ › โครงงานคุณธรรม" : "ภาพโครงงาน")}<div><span class="chip">${esc(p.dhamma)}</span><h2>${esc(p.name)}</h2>${p.virtue ? `<p class="meta" style="margin:4px 0 0">คุณธรรม: ${esc(p.virtue)}</p>` : ""}${resRow([resTile(p.doc, "เล่มรายงานโครงงาน", "file", p.name), resTile(p.video, "วิดีโอ", "video", p.name)])}</div></div>
+        ${slideBox(p.slides, p.name)}
         ${p.summary ? `<div class="prose">${paras(p.summary)}</div>` : ""}
         <table class="t"><tbody>${p.target ? `<tr><td>กลุ่มเป้าหมาย</td><td>${esc(p.target)}${p.students ? ` · ${num(p.students)} คน` : ""}</td></tr>` : ""}${p.leaders ? `<tr><td>แกนนำ</td><td>${esc(p.leaders)}</td></tr>` : ""}${p.teacher ? `<tr><td>ครูที่ปรึกษา</td><td>${esc(p.teacher)}</td></tr>` : ""}</tbody></table>
         ${m.inc || m.exp ? moneyCards(m, true) : ""}
@@ -444,7 +602,7 @@ V.post = id => {
   const p = (S.posts || []).find(x => x.id === id);
   if (!p) return pageHead("ไม่พบข่าว", "ข่าวนี้อาจถูกลบแล้ว", "ข่าวกิจกรรม") + `<section class="band"><div class="wrap"><a class="btn" href="#news">กลับไปหน้าข่าว</a></div></section>`;
   return pageHead(p.title, `${thDate(p.date, true)} · ${p.cat || "ข่าวกิจกรรม"}`, "ข่าวกิจกรรม") + `<section class="band"><div class="wrap">
-    <div class="prose">${paras(p.body)}</div>
+    ${vidInfo(p.video) ? `<div class="vinl">${vidCard({ ...p, url: p.video, desc: "" })}</div>` : ""}<div class="prose">${paras(p.body)}</div>
     ${(p.inds || []).length ? `<div class="ev" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0">${p.inds.map(i => `<a class="chip" href="#way" style="text-decoration:none">อัตลักษณ์ข้อ ${esc(i)}</a>`).join("")}</div>` : ""}
     ${(p.photos || []).filter(img).length ? `<div class="gallery">${p.photos.filter(img).map(x => `<img src="${img(x)}" alt="" loading="lazy" data-zoom>`).join("")}</div>` : ""}
     <p style="margin-top:24px"><a class="btn" href="#news">← ข่าวทั้งหมด</a></p></div></section>`;
@@ -454,6 +612,15 @@ V.docs = () => {
   return pageHead("เอกสารเผยแพร่", "รายงาน แผนการจัดการเรียนรู้ และเอกสารวิถีพุทธของโรงเรียน") + `<section class="band"><div class="wrap">
     <div class="filters">${yearPicker("dcYear")}</div>
     ${ds.length ? `<div class="dcs">${ds.map(docCard).join("")}</div>` : `<div class="empty">ยังไม่มีเอกสารเผยแพร่${canEdit ? ` · เพิ่มได้ที่ <a href="#admin">จัดการเว็บไซต์ › เอกสาร</a>` : ""}</div>`}
+  </div></section>`;
+};
+V.plans = kitPage("plans");
+V.innov = kitPage("innov");
+V.videos = () => {
+  const vs = sortDate(byYear(S.videos));
+  return pageHead("วิดีโอกิจกรรม", "คลิปกิจกรรมโรงเรียนวิถีพุทธ กดดูได้ทันทีในเว็บไซต์") + `<section class="band"><div class="wrap">
+    <div class="filters">${yearPicker("vdYear")}</div>
+    ${vs.length ? vidSec(vs) : `<div class="empty">ยังไม่มีวิดีโอ${canEdit ? ` · เพิ่มได้ที่ <a href="#admin">จัดการเว็บไซต์ › วิดีโอ</a>` : ""}</div>`}
   </div></section>`;
 };
 V.contact = () => {
@@ -468,25 +635,29 @@ V.contact = () => {
 };
 
 /* ---------- admin ---------- */
-let admTab = "posts", editId = null, pending = [];
-const ADM = [["pages","หน้าและเนื้อหา"],["posts","ข่าวและกิจกรรม"],["ind","อัตลักษณ์ 29"],["projects","โครงงานคุณธรรม"],["dhamma","ธรรมะประจำสัปดาห์"],["bp","Best Practice"],["docs","เอกสารเผยแพร่"],["events","ปฏิทินกิจกรรม"],["school","ข้อมูลโรงเรียน"],["people","บุคลากร"],["menu","เมนูหลัก"],["popup","หน้าต่างวันสำคัญ"],["side","เมนู E-Service"],["years","ปีการศึกษา"]];
+let admTab = "posts", editId = null, pending = [], pendingT = "";
+const ADM = [["pages","หน้าและเนื้อหา"],["posts","ข่าวและกิจกรรม"],["ind","อัตลักษณ์ 29"],["projects","โครงงานคุณธรรม"],["dhamma","ธรรมะประจำสัปดาห์"],["bp","Best Practice"],["plans","แผนการสอน"],["innov","นวัตกรรม"],["videos","วิดีโอ"],["docs","เอกสารเผยแพร่"],["events","ปฏิทินกิจกรรม"],["school","ข้อมูลโรงเรียน"],["people","บุคลากร"],["menu","เมนูหลัก"],["popup","หน้าต่างวันสำคัญ"],["side","เมนู E-Service"],["years","ปีการศึกษา"]];
 function F(k, label, type = "text", opt = {}) { return { k, label, type, ...opt }; }
 const SPECS = {
-  posts: [F("date","วันที่","date"),F("cat","หมวด","select",{opts:CATS}),F("title","หัวข้อข่าว","text",{wide:1}),F("body","รายละเอียด","textarea",{wide:1}),F("photos","ภาพกิจกรรม","photos",{wide:1}),F("inds","อัตลักษณ์ที่เกี่ยวข้อง (ข่าวนี้จะไปแสดงเป็นหลักฐานในหน้าวิถีพุทธ 29 ประการ)","inds",{wide:1})],
-  projects: [F("name","ชื่อโครงงาน","text",{wide:1}),F("dhamma","หลักธรรม"),F("virtue","คุณธรรมที่พัฒนา"),F("target","กลุ่มเป้าหมาย"),F("students","จำนวนนักเรียน","number"),F("teacher","ครูที่ปรึกษา"),F("seed","เงินตั้งต้น (บาท)","number"),F("leaders","แกนนำนักเรียน","text",{wide:1}),F("summary","สรุปโครงงาน (ปัญหา วิธีแก้ ผลที่เกิด)","textarea",{wide:1}),F("entries","บันทึกกิจกรรมและบัญชี: บรรทัดละรายการ วันที่ | กิจกรรม/รายรับ/รายจ่าย | รายละเอียด | จำนวนเงิน","entries",{wide:1}),F("doc","ลิงก์รายงานโครงงาน (Google Drive ตั้งค่าทุกคนที่มีลิงก์)","url",{wide:1}),F("photos","ภาพโครงงาน (ขึ้นหมุนอัตโนมัติที่หน้าแรก)","photos",{wide:1})],
+  posts: [F("date","วันที่","date"),F("cat","หมวด","select",{opts:CATS}),F("title","หัวข้อข่าว","text",{wide:1}),F("body","รายละเอียด","textarea",{wide:1}),F("video","ลิงก์วิดีโอ (ถ้ามี) YouTube / Facebook / Google Drive / TikTok","url",{wide:1}),F("photos","ภาพกิจกรรม","photos",{wide:1}),F("inds","อัตลักษณ์ที่เกี่ยวข้อง (ข่าวนี้จะไปแสดงเป็นหลักฐานในหน้าวิถีพุทธ 29 ประการ)","inds",{wide:1})],
+  projects: [F("name","ชื่อโครงงาน","text",{wide:1}),F("dhamma","หลักธรรม"),F("virtue","คุณธรรมที่พัฒนา"),F("target","กลุ่มเป้าหมาย"),F("students","จำนวนนักเรียน","number"),F("teacher","ครูที่ปรึกษา"),F("seed","เงินตั้งต้น (บาท)","number"),F("leaders","แกนนำนักเรียน","text",{wide:1}),F("summary","สรุปโครงงาน (ปัญหา วิธีแก้ ผลที่เกิด)","textarea",{wide:1}),F("entries","บันทึกกิจกรรมและบัญชี: บรรทัดละรายการ วันที่ | กิจกรรม/รายรับ/รายจ่าย | รายละเอียด | จำนวนเงิน","entries",{wide:1}),F("doc","ลิงก์เล่มรายงานโครงงาน (Google Drive / Google Docs / PDF ตั้งค่าทุกคนที่มีลิงก์ดูได้)","url",{wide:1}),F("slides","ลิงก์สไลด์นำเสนอ (Google Slides / Canva / Google Drive)","url",{wide:1}),F("video","ลิงก์วิดีโอ (ถ้ามี)","url",{wide:1}),F("photos","ภาพโครงงาน (ขึ้นหมุนอัตโนมัติที่หน้าแรก)","photos",{wide:1})],
   dhamma: [F("type","กิจกรรม","select",{opts:[["dekdee","เด็กดีมีธรรมะ"],["5min","5 นาที มีปัญญา"]]}),F("date","วันที่","date"),F("term","ภาคเรียน","select",{opts:["1","2"]}),F("hours","ชั่วโมง","number"),F("topic","หัวข้อ / หลักธรรม","text",{wide:1}),F("speaker","ผู้สอน / ผู้พูด"),F("spType","ผู้สอนเป็น","select",{opts:[["monk","พระสงฆ์"],["teacher","ครู"],["student","นักเรียน"]]}),F("group","ชั้น / กลุ่ม"),F("summary","ข้อคิดที่นักเรียนสรุปได้","textarea",{wide:1}),F("doc","ลิงก์เอกสาร เช่น สมุดบันทึกกลุ่มที่สแกนไว้ใน Google Drive","url",{wide:1}),F("photos","ภาพกิจกรรม (ขึ้นหมุนอัตโนมัติที่หน้าแรก)","photos",{wide:1})],
   docs: [F("title","ชื่อเอกสาร","text",{wide:1}),F("cat","หมวด","select",{opts:["รายงาน","แผนการจัดการเรียนรู้","โครงงานคุณธรรม","Best Practice","คำสั่ง / ประกาศ","อื่น ๆ"]}),F("date","วันที่","date"),F("desc","คำอธิบายสั้น ๆ (ถ้ามี)","text",{wide:1}),F("file","ไฟล์ PDF (อัปโหลดแล้วเปิดอ่านในเว็บได้ทันที)","pdf",{wide:1}),F("url","หรือ ลิงก์ Google Drive (ตั้งค่า ทุกคนที่มีลิงก์ดูได้)","url",{wide:1}),F("photos","ภาพปก (ไม่ใส่ก็ได้ ระบบใช้หน้าแรกของ PDF)","photos",{wide:1})],
+  plans: [F("title","ชื่อแผน / เรื่อง","text",{wide:1}),F("subject","กลุ่มสาระ / วิชา"),F("grade","ชั้น / กลุ่มเป้าหมาย"),F("dhamma","หลักธรรมที่บูรณาการ"),F("date","วันที่","date"),F("teacher","ครูผู้สอน"),F("tphoto","ภาพครูผู้สอน (ไม่ใส่ก็ได้ ถ้าชื่อตรงกับหน้าบุคลากร ระบบใช้ภาพจากหน้าบุคลากรให้)","photo1",{wide:1}),F("desc","คำอธิบายสั้น ๆ","textarea",{wide:1}),F("file","ลิงก์ไฟล์แผนการจัดการเรียนรู้ (Google Drive / Google Docs / PDF ตั้งค่าทุกคนที่มีลิงก์ดูได้)","url",{wide:1}),F("slides","ลิงก์สไลด์นำเสนอ (Google Slides / Canva / Google Drive)","url",{wide:1}),F("video","ลิงก์วิดีโอ (ถ้ามี)","url",{wide:1}),F("photos","ภาพกิจกรรม","photos",{wide:1})],
+  innov: [F("title","ชื่อนวัตกรรม","text",{wide:1}),F("subject","ประเภทนวัตกรรม"),F("grade","ชั้น / กลุ่มเป้าหมาย"),F("dhamma","หลักธรรมที่บูรณาการ"),F("date","วันที่","date"),F("teacher","เจ้าของนวัตกรรม"),F("tphoto","ภาพเจ้าของนวัตกรรม (ไม่ใส่ก็ได้ ถ้าชื่อตรงกับหน้าบุคลากร ระบบใช้ภาพจากหน้าบุคลากรให้)","photo1",{wide:1}),F("desc","คำอธิบายสั้น ๆ","textarea",{wide:1}),F("file","ลิงก์ไฟล์เล่มนวัตกรรม (Google Drive / Google Docs / PDF ตั้งค่าทุกคนที่มีลิงก์ดูได้)","url",{wide:1}),F("slides","ลิงก์สไลด์นำเสนอ (Google Slides / Canva / Google Drive)","url",{wide:1}),F("video","ลิงก์วิดีโอ (ถ้ามี)","url",{wide:1}),F("photos","ภาพกิจกรรม","photos",{wide:1})],
+  videos: [F("title","ชื่อวิดีโอ","text",{wide:1}),F("date","วันที่","date"),F("url","ลิงก์วิดีโอ: YouTube / Facebook / Google Drive / TikTok / Vimeo (ตั้งค่าให้ทุกคนดูได้)","url",{wide:1}),F("desc","คำอธิบายสั้น ๆ (ถ้ามี)","text",{wide:1}),F("photos","ภาพปก (ไม่ใส่ก็ได้ YouTube และ Google Drive ใช้ภาพปกจากคลิปให้อัตโนมัติ)","photos",{wide:1})],
   people: [F("name","ชื่อ–นามสกุล","text",{wide:1}),F("role","ตำแหน่ง / หน้าที่ (เช่น ผู้อำนวยการโรงเรียน, ครูผู้รับผิดชอบโครงการโรงเรียนวิถีพุทธ)","text",{wide:1}),F("group","กลุ่ม","select",{opts:PGROUPS}),F("order","ลำดับการแสดง (ตัวเลขน้อยขึ้นก่อน)","number"),F("photos","ภาพบุคคล (ใช้ภาพแรก แนะนำภาพแนวตั้ง หน้าตรง)","photos",{wide:1})],
   events: [F("title","ชื่อกิจกรรม","text",{wide:1}),F("date","วันเริ่ม (หน้าแรกนับถอยหลังถึงวันนี้)","date"),F("time","เวลาเริ่ม (ใช้นับถอยหลัง)","time"),F("end","วันสิ้นสุด (ถ้ามี)","date"),F("detail","รายละเอียดสั้น ๆ","text",{wide:1})],
 };
-const COLL = { people: "people", posts: "posts", projects: "projects", dhamma: "dhamma", docs: "docs", events: "events" };
-const NEWOBJ = { people: () => ({ group: "ครูและบุคลากร" }), posts: () => ({ date: today(), cat: CATS[0] }), projects: () => ({}), dhamma: () => ({ type: "dekdee", date: today(), term: "2", hours: 1, spType: "monk" }), docs: () => ({ date: today(), cat: "รายงาน" }), events: () => ({ date: today() }) };
+const COLL = { people: "people", posts: "posts", projects: "projects", dhamma: "dhamma", docs: "docs", videos: "videos", plans: "plans", innov: "innovs", events: "events" };
+const NEWOBJ = { people: () => ({ group: "ครูและบุคลากร" }), posts: () => ({ date: today(), cat: CATS[0] }), projects: () => ({}), dhamma: () => ({ type: "dekdee", date: today(), term: "2", hours: 1, spType: "monk" }), docs: () => ({ date: today(), cat: "รายงาน" }), videos: () => ({ date: today() }), plans: () => ({ date: today() }), innov: () => ({ date: today() }), events: () => ({ date: today() }) };
 function fieldHTML(f, o) {
   const v = o[f.k];
   const w = f.wide ? ' class="f wide"' : ' class="f"';
   if (f.type === "textarea") return `<label${w}>${esc(f.label)}<textarea data-k="${f.k}">${esc(v || "")}</textarea></label>`;
   if (f.type === "select") return `<label${w}>${esc(f.label)}<select data-k="${f.k}">${f.opts.map(op => { const [val, t] = Array.isArray(op) ? op : [op, op]; return `<option value="${esc(val)}" ${String(v ?? "") === String(val) ? "selected" : ""}>${esc(t)}</option>`; }).join("")}</select></label>`;
   if (f.type === "inds") return `<div${w}><span>${esc(f.label)}</span><div class="ichips" data-k="${f.k}" data-type="inds">${ALL.map(([id, t]) => `<label title="${esc(t)}"><input type="checkbox" value="${id}" ${(v || []).includes(id) ? "checked" : ""}>${id}</label>`).join("")}</div></div>`;
+  if (f.type === "photo1") { pendingT = v || ""; return `<div${w}><span>${esc(f.label)}</span><div class="phs" id="pht"></div><label class="btn sm" style="justify-self:start;margin-top:6px">เลือกภาพ<input type="file" accept="image/*" id="phtIn" hidden></label></div>`; }
   if (f.type === "photos") { pending = [...(v || [])]; return `<div${w}><span>${esc(f.label)}</span><div class="phs" id="phs"></div><label class="btn sm" style="justify-self:start;margin-top:6px">เพิ่มภาพ<input type="file" accept="image/*" multiple id="phIn" hidden></label><span class="hint">ระบบย่อภาพให้อัตโนมัติ เลือกเฉพาะภาพที่ดีที่สุด 3–8 ภาพต่อข่าว</span></div>`; }
   if (f.type === "pdf") { pendingPdf = v || null; return `<div${w}><span>${esc(f.label)}</span><div id="pdfInfo" class="pdfinfo">${pdfInfoHTML()}</div>${assetsApi ? `<label class="btn sm" style="justify-self:start;margin-top:6px">เลือกไฟล์ PDF<input type="file" accept="application/pdf" id="pdfIn" hidden></label><span class="hint">ไฟล์ไม่เกิน 20 MB</span>` : `<span class="hint">ใส่ลิงก์ Google Drive ในช่องถัดไป (ระบบเปิดอ่านในเว็บได้ทันที)</span>`}</div>`; }
   if (f.type === "entries") return `<label${w}>${esc(f.label)}<textarea data-k="${f.k}" style="min-height:120px;font-variant-numeric:tabular-nums">${esc((v || []).map(e => [e.date || "-", { income: "รายรับ", expense: "รายจ่าย", activity: "กิจกรรม" }[e.kind] || "กิจกรรม", e.detail, e.kind === "activity" ? "" : e.amount].join(" | ")).join("\n"))}</textarea><span class="hint">ตัวอย่าง: 2026-11-10 | รายรับ | ขายพวงกุญแจ 20 ชิ้น | 400 · ไม่ทราบวันที่ใส่ -</span></label>`;
@@ -497,6 +668,7 @@ function readFields(box, spec, base) {
   for (const f of spec) {
     const el = box.querySelector(`[data-k="${f.k}"]`);
     if (f.type === "photos") { o[f.k] = [...pending]; continue; }
+    if (f.type === "photo1") { o[f.k] = pendingT; continue; }
     if (f.type === "pdf") { o[f.k] = pendingPdf; continue; }
     if (!el) continue;
     if (f.type === "inds") o[f.k] = [...el.querySelectorAll("input:checked")].map(x => x.value);
@@ -506,7 +678,8 @@ function readFields(box, spec, base) {
   }
   return o;
 }
-function paintPhotos() { const b = $("#phs"); if (!b) return; b.innerHTML = pending.map((id, i) => img(id) ? `<figure><img src="${img(id)}" alt=""><button type="button" data-rmph="${i}" aria-label="ลบภาพ">×</button></figure>` : "").join("") || `<span class="hint">ยังไม่มีภาพ</span>`; }
+function paintPhotos() { const t = $("#pht"); if (t) t.innerHTML = img(pendingT) ? `<figure><img src="${img(pendingT)}" alt=""><button type="button" data-rmpt aria-label="ลบภาพ">×</button></figure>` : `<span class="hint">ยังไม่มีภาพ</span>`;
+  const b = $("#phs"); if (!b) return; b.innerHTML = pending.map((id, i) => img(id) ? `<figure><img src="${img(id)}" alt=""><button type="button" data-rmph="${i}" aria-label="ลบภาพ">×</button></figure>` : "").join("") || `<span class="hint">ยังไม่มีภาพ</span>`; }
 function compress(file, png) {
   return new Promise((res, rej) => {
     const r = new FileReader();
@@ -592,7 +765,7 @@ function admBody() {
       <div class="wide" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="submit">บันทึก</button><button class="btn" type="button" id="popPreview">ดูตัวอย่าง</button></div></form></div>`;
   }
   if (admTab === "menu") {
-    const codes = [["หน้าแรก","#home"],["เกี่ยวกับโรงเรียน","#about"],["ผู้บริหารและบุคลากร","#people"],["อัตลักษณ์ 29 ประการ","#way"],["Best Practice","#bp"],["โครงงานคุณธรรม","#projects"],["ธรรมะประจำสัปดาห์","#dhamma"],["ข่าวทั้งหมด","#news"],["ข่าวตามหมวด","#news:ชื่อหมวด"],["เอกสารเผยแพร่","#docs"],["ติดต่อเรา","#contact"],...pagesList().map(p => [p.title, "#p-" + p.id])];
+    const codes = [["หน้าแรก","#home"],["เกี่ยวกับโรงเรียน","#about"],["ผู้บริหารและบุคลากร","#people"],["อัตลักษณ์ 29 ประการ","#way"],["Best Practice","#bp"],["โครงงานคุณธรรม","#projects"],["ธรรมะประจำสัปดาห์","#dhamma"],["แผนการจัดการเรียนรู้","#plans"],["นวัตกรรม","#innov"],["ข่าวทั้งหมด","#news"],["ข่าวตามหมวด","#news:ชื่อหมวด"],["วิดีโอกิจกรรม","#videos"],["เอกสารเผยแพร่","#docs"],["ติดต่อเรา","#contact"],...pagesList().map(p => [p.title, "#p-" + p.id])];
     return `<div class="sh" style="margin-bottom:10px"><h2>เมนูหลัก</h2></div><div class="two"><div class="panel"><form class="form" id="menuForm">
       <label class="f wide">บรรทัดละเมนู: ชื่อเมนู | ลิงก์ · เมนูย่อยขึ้นต้นด้วย - · ลิงก์เว็บภายนอก (https://...) จะเปิดดูในระบบได้เลย<textarea data-k="menu" style="min-height:340px;font-family:ui-monospace,monospace;font-size:.95em">${esc(menuText(menuItems()))}</textarea></label>
       <div class="wide" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="submit">บันทึกเมนู</button><button class="btn" type="button" id="menuReset">คืนค่าเริ่มต้น</button></div></form></div>
@@ -849,12 +1022,14 @@ document.addEventListener("click", e => {
   if (t.closest("#popPreview")) { const f = $("#popForm"); if (f) showPop(true, readPop(f)); return; }
   if (t.closest("#popImgRm")) { pendingPop = ""; const b = $("#popPrev"); if (b) b.innerHTML = `<span class="hint">ยังไม่มีภาพ</span>`; return; }
   if (t.closest("#menuReset")) { S.menu = []; markDirty(); shell(); render(); toast("คืนเมนูเริ่มต้นแล้ว"); return; }
+  if (t.closest("[data-rmpt]")) { pendingT = ""; paintPhotos(); return; }
   const rm = t.closest("[data-rmph]"); if (rm) { pending.splice(+rm.dataset.rmph, 1); paintPhotos(); return; }
   const cur = t.closest("[data-cur]"); if (cur) { S.year = cur.dataset.cur; viewYear = S.year; markDirty(); render(); return; }
 });
 document.addEventListener("change", async e => {
   const t = e.target;
   if (t.id === "phIn") { await addPhotos([...t.files]); t.value = ""; }
+  if (t.id === "phtIn") { const fl = t.files[0]; t.value = ""; if (!fl) return; try { const d = await compress(fl); const id = "i" + uid(); S.img = S.img || {}; S.img[id] = d; pendingT = id; paintPhotos(); } catch { toast("อ่านภาพไม่ได้"); } }
   if (t.id === "indSel") { editId = t.value; render(); }
   if (t.id === "popImgIn") { const fl = t.files[0]; t.value = ""; if (!fl) return; try { const d = await compress(fl); const id = "i" + uid(); S.img[id] = d; pendingPop = id; const b = $("#popPrev"); if (b) b.innerHTML = `<img src="${d}" alt="" style="width:auto;height:110px">`; } catch { toast("อ่านภาพไม่ได้"); } }
   if (t.id === "pdfIn") { const fl = t.files[0]; t.value = ""; if (!fl) return; if (fl.size > 20 * 1048576) return toast("ไฟล์ใหญ่เกิน 20 MB");
@@ -871,6 +1046,9 @@ document.addEventListener("submit", e => {
     const coll = COLL[admTab], old = editId ? (S[coll] || []).find(x => x.id === editId) : null;
     const o = readFields(f, SPECS[admTab], old || { id: uid(), year: viewYear });
     if (!(o.title || o.name || o.topic)) return toast("ใส่ชื่อหรือหัวข้อก่อน");
+    if (coll === "videos" && !vidInfo(o.url)) return toast("ลิงก์วิดีโอไม่ถูกต้อง ใช้ลิงก์ YouTube, Facebook, Google Drive, TikTok หรือ Vimeo");
+    if (o.video && !vidInfo(o.video) && coll !== "posts") return toast("ลิงก์วิดีโอไม่ถูกต้อง ใช้ลิงก์ YouTube, Facebook, Google Drive, TikTok หรือ Vimeo");
+    if (coll === "posts" && o.video && !vidInfo(o.video)) return toast("ลิงก์วิดีโอไม่ถูกต้อง ใช้ลิงก์ YouTube, Facebook, Google Drive, TikTok หรือ Vimeo");
     if (coll === "people") delete o.year;
     upsert(coll, o); editId = o.id; markDirty(); render(); toast("บันทึกแล้ว อย่าลืมกดเผยแพร่");
   }
@@ -967,8 +1145,11 @@ function sidebar(cur) {
       ["way", "อัตลักษณ์ 29 ประการ"],
       ["bp", "Best Practice"],
       ["projects", "โครงงานคุณธรรม"],
+      ["plans", "แผนการจัดการเรียนรู้"],
+      ["innov", "นวัตกรรม"],
       ["", "ธรรมะประจำสัปดาห์", [["dhamma", "เด็กดีมีธรรมะ"], ["dhamma", "5 นาที มีปัญญา"]]],
       ["", "ข่าวและภาพกิจกรรม", [["news", "ข่าวทั้งหมด", ""], ...CATS.map(c => ["news", c, c])]],
+      ["videos", "วิดีโอกิจกรรม"],
       ["docs", "เอกสารเผยแพร่"],
     ], cur))
     + (es.length ? card("E-Service", `<ul>${es.map(l => safeUrl(l.u) ? `<li><a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.t)}</a></li>` : `<li><a>${esc(l.t)}</a></li>`).join("")}</ul>`) : "")
@@ -1053,7 +1234,7 @@ function render() {
   document.querySelectorAll("nav.main a").forEach(a => a.setAttribute("aria-current", a.getAttribute("href") === "#" + curKey && (!a.dataset.cat || a.dataset.cat === newsCat) && !(a.dataset.cat === undefined && a.closest(".dd") && curKey === "news" && newsCat) ? "page" : "false"));
   document.querySelectorAll(".dd").forEach(d => d.classList.toggle("cur", !!d.querySelector('a[aria-current="page"]')));
   closeMenus();
-  ["wayYear", "pjYear", "dhYear", "nwYear", "dcYear", "admYear"].forEach(bindYear);
+  ["wayYear", "pjYear", "dhYear", "nwYear", "dcYear", "vdYear", "plYear", "inYear", "admYear"].forEach(bindYear);
   if (key === "admin") paintPhotos();
   $("#mainNav")?.classList.remove("open");
   afterRender();
@@ -1064,7 +1245,7 @@ function render() {
   justifyAll();
 }
 document.addEventListener("mouseover", e => { if (innerWidth > 1000 && !e.target.closest("nav.main") && document.querySelector(".dd.open")) closeMenus(); });
-addEventListener("hashchange", () => { const h = location.hash || "#home"; if (h === ROUTE) return; ROUTE = h; render(); scrollTo(0, 0); });
+addEventListener("hashchange", () => { const h = location.hash || "#home"; if (h === ROUTE) return; if ($(".dv")) closeDoc(); if ($(".vp")) closeVid(); ROUTE = h; render(); scrollTo(0, 0); });
 document.addEventListener("click", e => {
   const a = e.target.closest('a[href^="#"]'); if (!a || e.button || e.metaKey || e.ctrlKey) return;
   const h = a.getAttribute("href"); if (h.length < 2) return;
