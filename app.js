@@ -68,7 +68,7 @@ function money(p) {
 }
 
 /* ---------- layout ---------- */
-const NAV = [["home","หน้าแรก","หน้าแรก"],["about","เกี่ยวกับโรงเรียน","เกี่ยวกับเรา"],["people","ผู้บริหารและบุคลากร","บุคลากร"],["way","วิถีพุทธ 29 ประการ","วิถีพุทธ 29"],["bp","Best Practice","Best Practice"],["projects","โครงงานคุณธรรม","โครงงาน"],["dhamma","ธรรมะประจำสัปดาห์","ธรรมะ"],["plans","แผนการจัดการเรียนรู้","แผนการสอน"],["innov","นวัตกรรม","นวัตกรรม"],["news","ข่าวกิจกรรม","ข่าว"],["videos","วิดีโอกิจกรรม","วิดีโอ"],["docs","เอกสารเผยแพร่","เอกสาร"],["contact","ติดต่อเรา","ติดต่อ"]];
+const NAV = [["home","หน้าแรก","หน้าแรก"],["about","เกี่ยวกับโรงเรียน","เกี่ยวกับเรา"],["people","ผู้บริหารและบุคลากร","บุคลากร"],["way","วิถีพุทธ 29 ประการ","วิถีพุทธ 29"],["bp","Best Practice","Best Practice"],["projects","โครงงานคุณธรรม","โครงงาน"],["dhamma","ธรรมะประจำสัปดาห์","ธรรมะ"],["plans","แผนการจัดการเรียนรู้","แผนการสอน"],["news","ข่าวกิจกรรม","ข่าว"],["videos","วิดีโอกิจกรรม","วิดีโอ"],["docs","เอกสารเผยแพร่","เอกสาร"],["contact","ติดต่อเรา","ติดต่อ"]];
 const SVG = {
   search: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
   menu: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
@@ -80,7 +80,7 @@ const SVG = {
 const MENU = [
   ["home", "หน้าแรก"],
   ["ข้อมูลโรงเรียน", [["about", "ประวัติและวิสัยทัศน์"], ["people", "ผู้บริหารและบุคลากร"], ["contact", "ติดต่อโรงเรียน"]]],
-  ["วิถีพุทธ", [["way", "อัตลักษณ์โรงเรียนวิถีพุทธ 29 ประการ"], ["bp", "Best Practice"], ["projects", "โครงงานคุณธรรม"], ["dhamma", "ธรรมะประจำสัปดาห์"], ["plans", "แผนการจัดการเรียนรู้"], ["innov", "นวัตกรรม"]]],
+  ["วิถีพุทธ", [["way", "อัตลักษณ์โรงเรียนวิถีพุทธ 29 ประการ"], ["bp", "Best Practice"], ["projects", "โครงงานคุณธรรม"], ["dhamma", "ธรรมะประจำสัปดาห์"], ["plans", "แผนการจัดการเรียนรู้"]]],
   ["ข่าวสาร", [["news", "ข่าวทั้งหมด", ""], ...CATS.map(c => ["news", c, c]), ["videos", "วิดีโอกิจกรรม"]]],
   ["docs", "เอกสารเผยแพร่"],
   ["contact", "ติดต่อเรา"],
@@ -248,12 +248,12 @@ V.home = () => {
   </div></section>
 
   <section class="sec"><div class="wrap"><div class="st"><h2><span class="no">${no()}</span>แนวปฏิบัติที่เป็นเลิศ (Best Practice)</h2><a href="#bp">รายละเอียด ›</a></div>
-    <p style="margin:0 0 14px"><b style="font-family:var(--f-head);font-size:1.12em">${esc(S.bp?.title || "")}</b> <span class="meta">· บูรณาการหลัก${esc(S.bp?.dhamma || "")}</span></p>
+    <p style="margin:0 0 14px"><b style="font-family:var(--f-head);font-size:1.12em">${esc(S.bp?.title || "")}</b> <span class="meta">· บูรณาการหลัก${esc(S.bp?.dhamma || "")}</span>${docBtn(S.bp?.doc, "เล่มรายงาน · " + (S.bp?.title || "Best Practice"))}${safeUrl(S.bp?.slides) ? `<a class="docb" href="${esc(S.bp.slides)}" data-file="${esc(S.bp.slides)}" data-ft="สไลด์นำเสนอ · ${esc(S.bp?.title || "Best Practice")}">${SVG.arrow} สไลด์นำเสนอ</a>` : ""}</p>
     <div class="tw reveal"><table class="bp"><thead><tr><th>ขั้น</th><th>กระบวนการ</th><th>หลักธรรม</th><th>การดำเนินงาน</th></tr></thead><tbody>${(S.bp?.steps || []).map((s, i) => `<tr><td>${thNum(i + 1)}</td><td><b>${esc(s.title)}</b></td><td class="tr">${esc(s.truth)}</td><td>${esc(s.detail || "")}</td></tr>`).join("")}</tbody></table></div>
     <div class="bp-foot reveal"><div class="bp-media">${rotBox(S.bp?.photos, canEdit ? "เพิ่มภาพได้ที่ จัดการเว็บไซต์ › Best Practice" : "ภาพกิจกรรม Best Practice")}</div>${(S.bp?.results || []).length ? `<div class="rs-grid">${S.bp.results.map(r => `<div class="rs"><b>${esc(r.value)}</b><span>${esc(r.label)}</span></div>`).join("")}</div>` : ""}</div>
   </div></section>
 
-  ${(() => { const ks = [...byYear(S.plans).map(x => [x, "plans"]), ...byYear(S.innovs).map(x => [x, "innov"])].sort((a, b) => String(b[0].date || "").localeCompare(String(a[0].date || ""))).slice(0, 4); return ks.length ? `<section class="sec"><div class="wrap"><div class="st"><h2><span class="no">${no()}</span>แผนการจัดการเรียนรู้และนวัตกรรม</h2><span class="st-links"><a href="#plans">แผนการสอน ›</a><a href="#innov">นวัตกรรม ›</a></span></div><div class="kcs">${ks.map(([x, k]) => kitCard(x, k)).join("")}</div></div></section>` : ""; })()}
+  ${(() => { const ks = [...byYear(S.plans).map(x => [x, "plans"])].sort((a, b) => String(b[0].date || "").localeCompare(String(a[0].date || ""))).slice(0, 4); return ks.length ? `<section class="sec"><div class="wrap"><div class="st"><h2><span class="no">${no()}</span>แผนการจัดการเรียนรู้</h2><a href="#plans">ทั้งหมด ›</a></div><div class="kcs">${ks.map(([x, k]) => kitCard(x, k)).join("")}</div></div></section>` : ""; })()}
   <section class="sec paper"><div class="wrap two">
     <div><div class="st"><h2><span class="no">${no()}</span>โครงงานคุณธรรม</h2><a href="#projects">ทั้งหมด ›</a></div>${pj.length ? pj.slice(0, 2).map(p => { const m = money(p); return `<article class="hc reveal">${rotBox(p.photos, canEdit ? "เพิ่มภาพได้ที่ จัดการเว็บไซต์ › โครงงานคุณธรรม" : "ภาพโครงงานจะแสดงที่นี่")}<div class="hc-bd"><span class="chip">${esc(p.dhamma)}</span><h3><a href="#projects">${esc(p.name)}</a></h3><p class="meta">${esc(p.target || "")}${p.students ? " · " + num(p.students) + " คน" : ""}</p>${p.summary ? `<p class="hc-sum">${esc(short(p.summary, 170))}</p>` : ""}${m.inc ? moneyCards(m) : ""}<div class="hc-ft"><a class="more" href="#projects">อ่านรายละเอียด ›</a>${docBtn(p.doc, "เล่มรายงาน · " + p.name)}${safeUrl(p.slides) ? `<a class="docb" href="${esc(p.slides)}" data-file="${esc(p.slides)}" data-ft="สไลด์นำเสนอ · ${esc(p.name)}">${SVG.arrow} สไลด์นำเสนอ</a>` : ""}</div></div></article>`; }).join("") : emptyBox("ยังไม่มีโครงงานในปีนี้")}</div>
     <div><div class="st"><h2><span class="no">${no()}</span>ธรรมะประจำสัปดาห์</h2><a href="#dhamma">ทั้งหมด ›</a></div>${(() => { const all = sortDate(byYear(S.dhamma)); return `<div class="dh-list">${(S.dhammaInfo || []).map(x => { const t = dhType(x.name), rec = all.filter(d => d.type === t), last = rec[0];
@@ -397,7 +397,6 @@ function teacherPic(x) {
 }
 const KIT = {
   plans: { coll: "plans", name: "แผนการจัดการเรียนรู้", file: "แผนการจัดการเรียนรู้", who: "ครูผู้สอน", empty: "ยังไม่มีแผนการจัดการเรียนรู้" },
-  innov: { coll: "innovs", name: "นวัตกรรม", file: "เล่มนวัตกรรม", who: "เจ้าของนวัตกรรม", empty: "ยังไม่มีนวัตกรรม" },
 };
 function kitHTML(x, k) {
   const K = KIT[k], tp = teacherPic(x), ph = (x.photos || []).filter(img);
@@ -561,7 +560,9 @@ V.bp = () => {
   const b = S.bp || {};
   return pageHead("Best Practice", b.title) + `<section class="band"><div class="wrap">
     <div class="two" style="margin-bottom:26px"><div class="prose"><h2 style="margin-bottom:8px">ที่มาและความสำคัญ</h2>${paras(b.problem)}</div>
-      <div class="panel"><table class="t"><tbody><tr><td>หลักธรรม</td><td>${esc(b.dhamma)}</td></tr>${b.owner ? `<tr><td>เจ้าของผลงาน</td><td>${esc(b.owner)}</td></tr>` : ""}${b.award ? `<tr><td>รางวัล</td><td>${esc(b.award)}</td></tr>` : ""}${safeUrl(b.doc) ? `<tr><td>เอกสาร</td><td><a href="${esc(b.doc)}" target="_blank" rel="noopener">เปิดรายงานฉบับเต็ม ↗</a></td></tr>` : ""}</tbody></table></div></div>
+      <div class="panel">${(() => { const tp = teacherPic({ tphoto: b.tphoto, teacher: b.owner }); return b.owner || tp ? `<figure class="kit-tc bp-owner"><span class="kit-ph">${tp ? `<img src="${tp}" alt="${esc(b.owner || "")}">` : LOTUS}</span><figcaption><b>${esc(b.owner || "")}</b><small>เจ้าของผลงาน</small></figcaption></figure>` : ""; })()}<table class="t"><tbody><tr><td>หลักธรรม</td><td>${esc(b.dhamma)}</td></tr>${b.award ? `<tr><td>รางวัล</td><td>${esc(b.award)}</td></tr>` : ""}</tbody></table>
+        ${resRow([resTile(b.doc, "เล่มรายงาน", "file", b.title || "Best Practice"), resTile(b.video, "วิดีโอ", "video", b.title || "Best Practice")])}</div></div>
+    ${slideBox(b.slides, b.title || "Best Practice")}${b.slides ? `<div style="height:26px"></div>` : ""}
     <h2 style="margin-bottom:12px">${(b.steps || []).length} กระบวนการ</h2>
     <div class="steps">${(b.steps || []).map((s, i) => `<div class="step"><div class="n">${i + 1}</div><h3>${esc(s.title)}</h3><div class="t">${esc(s.truth)}</div>${s.detail ? `<p class="meta jt" style="margin:6px 0 0">${esc(s.detail)}</p>` : ""}</div>`).join("")}</div>
     ${(b.results || []).length ? `<h2 style="margin:28px 0 12px">ผลการดำเนินงาน</h2><div class="stats" style="margin-top:0">${b.results.map(r => `<div><b>${esc(r.value)}</b><span>${esc(r.label)}</span></div>`).join("")}</div>` : ""}
@@ -615,7 +616,6 @@ V.docs = () => {
   </div></section>`;
 };
 V.plans = kitPage("plans");
-V.innov = kitPage("innov");
 V.videos = () => {
   const vs = sortDate(byYear(S.videos));
   return pageHead("วิดีโอกิจกรรม", "คลิปกิจกรรมโรงเรียนวิถีพุทธ กดดูได้ทันทีในเว็บไซต์") + `<section class="band"><div class="wrap">
@@ -636,7 +636,7 @@ V.contact = () => {
 
 /* ---------- admin ---------- */
 let admTab = "posts", editId = null, pending = [], pendingT = "";
-const ADM = [["pages","หน้าและเนื้อหา"],["posts","ข่าวและกิจกรรม"],["ind","อัตลักษณ์ 29"],["projects","โครงงานคุณธรรม"],["dhamma","ธรรมะประจำสัปดาห์"],["bp","Best Practice"],["plans","แผนการสอน"],["innov","นวัตกรรม"],["videos","วิดีโอ"],["docs","เอกสารเผยแพร่"],["events","ปฏิทินกิจกรรม"],["school","ข้อมูลโรงเรียน"],["people","บุคลากร"],["menu","เมนูหลัก"],["popup","หน้าต่างวันสำคัญ"],["side","เมนู E-Service"],["years","ปีการศึกษา"]];
+const ADM = [["pages","หน้าและเนื้อหา"],["posts","ข่าวและกิจกรรม"],["ind","อัตลักษณ์ 29"],["projects","โครงงานคุณธรรม"],["dhamma","ธรรมะประจำสัปดาห์"],["bp","Best Practice"],["plans","แผนการสอน"],["videos","วิดีโอ"],["docs","เอกสารเผยแพร่"],["events","ปฏิทินกิจกรรม"],["school","ข้อมูลโรงเรียน"],["people","บุคลากร"],["menu","เมนูหลัก"],["popup","หน้าต่างวันสำคัญ"],["side","เมนู E-Service"],["years","ปีการศึกษา"]];
 function F(k, label, type = "text", opt = {}) { return { k, label, type, ...opt }; }
 const SPECS = {
   posts: [F("date","วันที่","date"),F("cat","หมวด","select",{opts:CATS}),F("title","หัวข้อข่าว","text",{wide:1}),F("body","รายละเอียด","textarea",{wide:1}),F("video","ลิงก์วิดีโอ (ถ้ามี) YouTube / Facebook / Google Drive / TikTok","url",{wide:1}),F("photos","ภาพกิจกรรม","photos",{wide:1}),F("inds","อัตลักษณ์ที่เกี่ยวข้อง (ข่าวนี้จะไปแสดงเป็นหลักฐานในหน้าวิถีพุทธ 29 ประการ)","inds",{wide:1})],
@@ -644,13 +644,12 @@ const SPECS = {
   dhamma: [F("type","กิจกรรม","select",{opts:[["dekdee","เด็กดีมีธรรมะ"],["5min","5 นาที มีปัญญา"]]}),F("date","วันที่","date"),F("term","ภาคเรียน","select",{opts:["1","2"]}),F("hours","ชั่วโมง","number"),F("topic","หัวข้อ / หลักธรรม","text",{wide:1}),F("speaker","ผู้สอน / ผู้พูด"),F("spType","ผู้สอนเป็น","select",{opts:[["monk","พระสงฆ์"],["teacher","ครู"],["student","นักเรียน"]]}),F("group","ชั้น / กลุ่ม"),F("summary","ข้อคิดที่นักเรียนสรุปได้","textarea",{wide:1}),F("doc","ลิงก์เอกสาร เช่น สมุดบันทึกกลุ่มที่สแกนไว้ใน Google Drive","url",{wide:1}),F("photos","ภาพกิจกรรม (ขึ้นหมุนอัตโนมัติที่หน้าแรก)","photos",{wide:1})],
   docs: [F("title","ชื่อเอกสาร","text",{wide:1}),F("cat","หมวด","select",{opts:["รายงาน","แผนการจัดการเรียนรู้","โครงงานคุณธรรม","Best Practice","คำสั่ง / ประกาศ","อื่น ๆ"]}),F("date","วันที่","date"),F("desc","คำอธิบายสั้น ๆ (ถ้ามี)","text",{wide:1}),F("file","ไฟล์ PDF (อัปโหลดแล้วเปิดอ่านในเว็บได้ทันที)","pdf",{wide:1}),F("url","หรือ ลิงก์ Google Drive (ตั้งค่า ทุกคนที่มีลิงก์ดูได้)","url",{wide:1}),F("photos","ภาพปก (ไม่ใส่ก็ได้ ระบบใช้หน้าแรกของ PDF)","photos",{wide:1})],
   plans: [F("title","ชื่อแผน / เรื่อง","text",{wide:1}),F("subject","กลุ่มสาระ / วิชา"),F("grade","ชั้น / กลุ่มเป้าหมาย"),F("dhamma","หลักธรรมที่บูรณาการ"),F("date","วันที่","date"),F("teacher","ครูผู้สอน"),F("tphoto","ภาพครูผู้สอน (ไม่ใส่ก็ได้ ถ้าชื่อตรงกับหน้าบุคลากร ระบบใช้ภาพจากหน้าบุคลากรให้)","photo1",{wide:1}),F("desc","คำอธิบายสั้น ๆ","textarea",{wide:1}),F("file","ลิงก์ไฟล์แผนการจัดการเรียนรู้ (Google Drive / Google Docs / PDF ตั้งค่าทุกคนที่มีลิงก์ดูได้)","url",{wide:1}),F("slides","ลิงก์สไลด์นำเสนอ (Google Slides / Canva / Google Drive)","url",{wide:1}),F("video","ลิงก์วิดีโอ (ถ้ามี)","url",{wide:1}),F("photos","ภาพกิจกรรม","photos",{wide:1})],
-  innov: [F("title","ชื่อนวัตกรรม","text",{wide:1}),F("subject","ประเภทนวัตกรรม"),F("grade","ชั้น / กลุ่มเป้าหมาย"),F("dhamma","หลักธรรมที่บูรณาการ"),F("date","วันที่","date"),F("teacher","เจ้าของนวัตกรรม"),F("tphoto","ภาพเจ้าของนวัตกรรม (ไม่ใส่ก็ได้ ถ้าชื่อตรงกับหน้าบุคลากร ระบบใช้ภาพจากหน้าบุคลากรให้)","photo1",{wide:1}),F("desc","คำอธิบายสั้น ๆ","textarea",{wide:1}),F("file","ลิงก์ไฟล์เล่มนวัตกรรม (Google Drive / Google Docs / PDF ตั้งค่าทุกคนที่มีลิงก์ดูได้)","url",{wide:1}),F("slides","ลิงก์สไลด์นำเสนอ (Google Slides / Canva / Google Drive)","url",{wide:1}),F("video","ลิงก์วิดีโอ (ถ้ามี)","url",{wide:1}),F("photos","ภาพกิจกรรม","photos",{wide:1})],
   videos: [F("title","ชื่อวิดีโอ","text",{wide:1}),F("date","วันที่","date"),F("url","ลิงก์วิดีโอ: YouTube / Facebook / Google Drive / TikTok / Vimeo (ตั้งค่าให้ทุกคนดูได้)","url",{wide:1}),F("desc","คำอธิบายสั้น ๆ (ถ้ามี)","text",{wide:1}),F("photos","ภาพปก (ไม่ใส่ก็ได้ YouTube และ Google Drive ใช้ภาพปกจากคลิปให้อัตโนมัติ)","photos",{wide:1})],
   people: [F("name","ชื่อ–นามสกุล","text",{wide:1}),F("role","ตำแหน่ง / หน้าที่ (เช่น ผู้อำนวยการโรงเรียน, ครูผู้รับผิดชอบโครงการโรงเรียนวิถีพุทธ)","text",{wide:1}),F("group","กลุ่ม","select",{opts:PGROUPS}),F("order","ลำดับการแสดง (ตัวเลขน้อยขึ้นก่อน)","number"),F("photos","ภาพบุคคล (ใช้ภาพแรก แนะนำภาพแนวตั้ง หน้าตรง)","photos",{wide:1})],
   events: [F("title","ชื่อกิจกรรม","text",{wide:1}),F("date","วันเริ่ม (หน้าแรกนับถอยหลังถึงวันนี้)","date"),F("time","เวลาเริ่ม (ใช้นับถอยหลัง)","time"),F("end","วันสิ้นสุด (ถ้ามี)","date"),F("detail","รายละเอียดสั้น ๆ","text",{wide:1})],
 };
-const COLL = { people: "people", posts: "posts", projects: "projects", dhamma: "dhamma", docs: "docs", videos: "videos", plans: "plans", innov: "innovs", events: "events" };
-const NEWOBJ = { people: () => ({ group: "ครูและบุคลากร" }), posts: () => ({ date: today(), cat: CATS[0] }), projects: () => ({}), dhamma: () => ({ type: "dekdee", date: today(), term: "2", hours: 1, spType: "monk" }), docs: () => ({ date: today(), cat: "รายงาน" }), videos: () => ({ date: today() }), plans: () => ({ date: today() }), innov: () => ({ date: today() }), events: () => ({ date: today() }) };
+const COLL = { people: "people", posts: "posts", projects: "projects", dhamma: "dhamma", docs: "docs", videos: "videos", plans: "plans", events: "events" };
+const NEWOBJ = { people: () => ({ group: "ครูและบุคลากร" }), posts: () => ({ date: today(), cat: CATS[0] }), projects: () => ({}), dhamma: () => ({ type: "dekdee", date: today(), term: "2", hours: 1, spType: "monk" }), docs: () => ({ date: today(), cat: "รายงาน" }), videos: () => ({ date: today() }), plans: () => ({ date: today() }), events: () => ({ date: today() }) };
 function fieldHTML(f, o) {
   const v = o[f.k];
   const w = f.wide ? ' class="f wide"' : ' class="f"';
@@ -717,11 +716,15 @@ function admBody() {
       </form></div>`;
   }
   if (admTab === "bp") {
-    const b = S.bp || {}; pending = [...(b.photos || [])];
+    const b = S.bp || {}; pending = [...(b.photos || [])]; pendingT = b.tphoto || "";
     return `<div class="sh" style="margin-bottom:10px"><h2>Best Practice</h2></div><div class="panel"><form class="form" id="bpForm">
       <label class="f wide">ชื่อผลงาน<input data-k="title" value="${esc(b.title)}"></label>
-      <label class="f">หลักธรรม<input data-k="dhamma" value="${esc(b.dhamma)}"></label><label class="f">เจ้าของผลงาน<input data-k="owner" value="${esc(b.owner)}"></label>
-      <label class="f">รางวัล<input data-k="award" value="${esc(b.award)}"></label><label class="f">ลิงก์รายงานฉบับเต็ม<input data-k="doc" type="url" value="${esc(b.doc)}"></label>
+      <label class="f">หลักธรรม<input data-k="dhamma" value="${esc(b.dhamma)}"></label><label class="f">เจ้าของผลงาน / ผู้รับผิดชอบ<input data-k="owner" value="${esc(b.owner)}"></label>
+      <label class="f wide">รางวัล<input data-k="award" value="${esc(b.award)}"></label>
+      <div class="f wide"><span>ภาพเจ้าของผลงาน (ไม่ใส่ก็ได้ ถ้าชื่อตรงกับหน้าบุคลากร ระบบใช้ภาพจากหน้าบุคลากรให้)</span><div class="phs" id="pht"></div><label class="btn sm" style="justify-self:start;margin-top:6px">เลือกภาพ<input type="file" accept="image/*" id="phtIn" hidden></label></div>
+      <label class="f wide">ลิงก์เล่มรายงาน Best Practice / นวัตกรรม (Google Drive / Google Docs / PDF)<input data-k="doc" type="url" value="${esc(b.doc)}"></label>
+      <label class="f wide">ลิงก์สไลด์นำเสนอ (Vercel / Google Slides / Canva)<input data-k="slides" type="url" value="${esc(b.slides)}"></label>
+      <label class="f wide">ลิงก์วิดีโอ (ถ้ามี)<input data-k="video" type="url" value="${esc(b.video)}"></label>
       <label class="f wide">ที่มาและความสำคัญ<textarea data-k="problem">${esc(b.problem)}</textarea></label>
       <label class="f wide">กระบวนการ: บรรทัดละขั้น ชื่อขั้น | หลักธรรม | รายละเอียด<textarea data-k="steps" style="min-height:130px">${esc((b.steps || []).map(s => [s.title, s.truth, s.detail].join(" | ")).join("\n"))}</textarea></label>
       <label class="f wide">ผลการดำเนินงาน: บรรทัดละรายการ ตัวชี้วัด | ผล<textarea data-k="results">${esc((b.results || []).map(r => `${r.label} | ${r.value}`).join("\n"))}</textarea></label>
@@ -765,7 +768,7 @@ function admBody() {
       <div class="wide" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="submit">บันทึก</button><button class="btn" type="button" id="popPreview">ดูตัวอย่าง</button></div></form></div>`;
   }
   if (admTab === "menu") {
-    const codes = [["หน้าแรก","#home"],["เกี่ยวกับโรงเรียน","#about"],["ผู้บริหารและบุคลากร","#people"],["อัตลักษณ์ 29 ประการ","#way"],["Best Practice","#bp"],["โครงงานคุณธรรม","#projects"],["ธรรมะประจำสัปดาห์","#dhamma"],["แผนการจัดการเรียนรู้","#plans"],["นวัตกรรม","#innov"],["ข่าวทั้งหมด","#news"],["ข่าวตามหมวด","#news:ชื่อหมวด"],["วิดีโอกิจกรรม","#videos"],["เอกสารเผยแพร่","#docs"],["ติดต่อเรา","#contact"],...pagesList().map(p => [p.title, "#p-" + p.id])];
+    const codes = [["หน้าแรก","#home"],["เกี่ยวกับโรงเรียน","#about"],["ผู้บริหารและบุคลากร","#people"],["อัตลักษณ์ 29 ประการ","#way"],["Best Practice","#bp"],["โครงงานคุณธรรม","#projects"],["ธรรมะประจำสัปดาห์","#dhamma"],["แผนการจัดการเรียนรู้","#plans"],["ข่าวทั้งหมด","#news"],["ข่าวตามหมวด","#news:ชื่อหมวด"],["วิดีโอกิจกรรม","#videos"],["เอกสารเผยแพร่","#docs"],["ติดต่อเรา","#contact"],...pagesList().map(p => [p.title, "#p-" + p.id])];
     return `<div class="sh" style="margin-bottom:10px"><h2>เมนูหลัก</h2></div><div class="two"><div class="panel"><form class="form" id="menuForm">
       <label class="f wide">บรรทัดละเมนู: ชื่อเมนู | ลิงก์ · เมนูย่อยขึ้นต้นด้วย - · ลิงก์เว็บภายนอก (https://...) จะเปิดดูในระบบได้เลย<textarea data-k="menu" style="min-height:340px;font-family:ui-monospace,monospace;font-size:.95em">${esc(menuText(menuItems()))}</textarea></label>
       <div class="wide" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="submit">บันทึกเมนู</button><button class="btn" type="button" id="menuReset">คืนค่าเริ่มต้น</button></div></form></div>
@@ -1060,7 +1063,8 @@ document.addEventListener("submit", e => {
   }
   if (f.id === "bpForm") {
     const q = k => f.querySelector(`[data-k="${k}"]`).value.trim();
-    S.bp = { title: q("title"), dhamma: q("dhamma"), owner: q("owner"), award: q("award"), doc: q("doc"), problem: q("problem"),
+    if (q("video") && !vidInfo(q("video"))) return toast("ลิงก์วิดีโอไม่ถูกต้อง ใช้ลิงก์ YouTube, Facebook, Google Drive, TikTok หรือ Vimeo");
+    S.bp = { ...(S.bp || {}), title: q("title"), dhamma: q("dhamma"), owner: q("owner"), award: q("award"), doc: q("doc"), slides: q("slides"), video: q("video"), tphoto: pendingT, problem: q("problem"),
       steps: q("steps").split("\n").filter(Boolean).map(l => { const [title, truth, detail] = l.split("|").map(x => (x || "").trim()); return { title, truth, detail }; }),
       results: q("results").split("\n").filter(Boolean).map(l => { const [label, value] = l.split("|").map(x => (x || "").trim()); return { label, value }; }), photos: [...pending] };
     markDirty(); render(); toast("บันทึกแล้ว");
@@ -1146,7 +1150,6 @@ function sidebar(cur) {
       ["bp", "Best Practice"],
       ["projects", "โครงงานคุณธรรม"],
       ["plans", "แผนการจัดการเรียนรู้"],
-      ["innov", "นวัตกรรม"],
       ["", "ธรรมะประจำสัปดาห์", [["dhamma", "เด็กดีมีธรรมะ"], ["dhamma", "5 นาที มีปัญญา"]]],
       ["", "ข่าวและภาพกิจกรรม", [["news", "ข่าวทั้งหมด", ""], ...CATS.map(c => ["news", c, c])]],
       ["videos", "วิดีโอกิจกรรม"],
